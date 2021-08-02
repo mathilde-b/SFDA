@@ -61,6 +61,10 @@ prostate/
 ```
 The network takes png or nii files as an input. The gt folder contains gray-scale images of the ground-truth, where the gray-scale level is the number of the class.
 
+### Class-ratio (sizes) prior
+The class-ratio size prior is estimated from anatomical knowledge in our applications.
+
+
 ### results
 ```
 results/
