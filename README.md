@@ -1,6 +1,6 @@
 # SFDA
 Source-Free Domain Adaptation
-by [Mathilde Bateson](https://github.com/mathilde-b), ([Hoel Kervadec](https://github.com/HKervadec), ([Jose Dolz](https://github.com/josedolz)), Hervé Lombaert, Ismail Ben Ayed
+by [Mathilde Bateson](https://github.com/mathilde-b), [Hoel Kervadec](https://github.com/HKervadec, [Jose Dolz](https://github.com/josedolz), Hervé Lombaert, Ismail Ben Ayed
 
 Code of our submission at [MICCAI 2020](https://link.springer.com/chapter/10.1007/978-3-030-59710-8_48) and its ongoing journal extension. Video of the MICCAI talk is available: 
 https://www.youtube.com/watch?v=ALYaa5xrxbQ&ab_channel=MB
