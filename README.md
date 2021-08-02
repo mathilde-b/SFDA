@@ -80,7 +80,7 @@ The size csv file should be as follow:
 Sample from sizes/prostate_sa.csv :
 
 | val_ids  | val_gt_size | dumbpredwtags
-| ------------- | ------------- |
+| ------------- | ------------- |------------- |
 | Case00_0.nii  | [147398.0, 827.0]  | [140225, 6905]
 | Case00_1.nii  | [147080.0, 1145.0]  | [140225, 6905]
 | Case00_14.nii  | [148225.0, 0.0] | [148225, 0]
