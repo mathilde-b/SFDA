@@ -41,8 +41,8 @@ Non-exhaustive list:
 ### datasets
 For instance
 ```
-MICCAI/
-    prostate/
+prostate/
+    train/
         img/
             Case_10_0.png
             ...
