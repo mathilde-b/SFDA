@@ -62,8 +62,33 @@ prostate/
 The network takes png or nii files as an input. The gt folder contains gray-scale images of the ground-truth, where the gray-scale level is the number of the class.
 
 ### Class-ratio (sizes) prior
-The class-ratio size prior is estimated from anatomical knowledge in our applications.
+The class-ratio prior is estimated from anatomical knowledge in our applications. In our implementation, the size in pixels of each slice (from training and validation sets from the target domain) is estimated once, before the start of the adaptation phase, and saved in a csv file. 
 
+Scheme
+```
+sizes/
+    prostate_sa.csv
+    whs.csv
+    ivd.csv
+```
+The size csv file should be as follow:
+
+| val_ids | dumbpredwtags
+| ------------- | ------------- |
+| Case00_0.nii | [estimatedsize_class0,estimatedsize_class1,...,estimatedsize_classk]
+
+Sample from sizes/prostate_sa.csv :
+
+| val_ids  | val_gt_size | dumbpredwtags
+| ------------- | ------------- |
+| Case00_0.nii  | [147398.0, 827.0]  | [140225, 6905]
+| Case00_1.nii  | [147080.0, 1145.0]  | [140225, 6905]
+...
+| Case00_14.nii  | [148225.0, 0.0] | [148225, 0]
+
+Note that the true val_gt_size is unknown, so it is not directly used in our proposed SFDA. However, in our framework an image-level annotation is available for the target training dataset: the "Tag" of each class k, such that we put estimatedsize_classk=0 if val_gt_size_k = 0
+
+Note that in our implementation, the csv file has the size in pixels, and the KL Divergence loss divides by size/(w*h) to obtain the class-ratio.
 
 ### results
 ```
