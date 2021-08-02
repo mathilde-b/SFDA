@@ -90,6 +90,8 @@ NB 1: the true val_gt_size is unknown, so it is not directly used in our propose
 
 NB 2: in our implementation, the csv file contains the sizes in pixels, and the KL Divergence loss divides the size in pixels by (w*h) the height and weight of the slice, to obtain the class-ratio prior.
 
+NB 3 : there should be no overlap between names of the slices in the training and validation sets (Case00_0.nii,...).
+
 ### results
 ```
 results/
