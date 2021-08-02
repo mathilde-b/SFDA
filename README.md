@@ -87,7 +87,7 @@ Sample from sizes/prostate_sa.csv :
 
 Note that the true val_gt_size is unknown, so it is not directly used in our proposed SFDA. However, in our framework an image-level annotation is available for the target training dataset: the "Tag" of each class k, such that Estimated_Size_classk=0 if val_gt_size_k = 0
 
-Note that in our implementation, the csv file has the size in pixels, and the KL Divergence loss divides the size in pixels by (weight*height) to obtain the class-ratio, the height and weight of the slice.
+Note that in our implementation, the csv file has the size in pixels, and the KL Divergence loss divides the size in pixels by (w*h) to obtain the class-ratio, the height and weight of the slice.
 
 ### results
 ```
