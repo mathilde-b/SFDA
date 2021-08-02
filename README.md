@@ -43,18 +43,18 @@ For instance
 ```
 prostate/
     train/
-        img/
+        IMG/
             Case_10_0.png
             ...
-        gt/
+        GT/
             Case_10_0.png
             ...
         ...
     val/
-        img/
+        IMG/
             Case_11_0.png
             ...
-        gt/
+        GT/
             Case_11_0.png
             ...
         ...
@@ -104,7 +104,7 @@ results/
         sfda/
             ...
         best.pkl # best model saved
-        metrics.csv # metrics over time, csv
+        IMG_target_metrics.csv # metrics over time, csv
         best_epoch.txt # number of the best epoch
         val_dice.npy # log of all the metric over time for each image and class
         val_dice.png # Plot over time
@@ -143,6 +143,7 @@ Only print the commands that will be run (useful to check recipes are properly d
 ```
 make -f sa.make <a> -n
 ```
+
 
 ## Related Implementation and Dataset
 * [Mathilde Bateson](https://github.com/mathilde-b), [Hoel Kervadec](https://github.com/HKervadec), [Jose Dolz](https://github.com/josedolz), Hervé Lombaert, Ismail Ben Ayed. Constrained Domain Adaptation for Image Segmentation. In IEEE Transactions on Medical Imaging, 2021. [[paper]](https://ieeexplore.ieee.org/document/9382339) [[implementation]](https://github.com/mathilde-b/CDA) 
