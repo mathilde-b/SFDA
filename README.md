@@ -75,7 +75,7 @@ The size csv file should be as follow:
 
 | val_ids | dumbpredwtags
 | ------------- | ------------- |
-| Case00_0.nii | [Estimated_Size_class0,Estimated_Size_class1,...,Estimated_Size_classk]
+| Case00_0.nii | [Estimated_Size_class0, Estimated_Size_class1, ..., Estimated_Size_classk]
 
 Sample from sizes/prostate_sa.csv :
 
