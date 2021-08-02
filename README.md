@@ -97,27 +97,27 @@ The losses are defined in the [`losses.py`](losses.py) file.
 ## Cool tricks
 Remove all assertions from the code. Usually done after making sure it does not crash for one complete epoch:
 ```
-make -f prostate.make <anything really> CFLAGS=-O
+make -f sa.make <anything really> CFLAGS=-O
 ```
 
 Use a specific python executable:
 ```
-make -f prostate.make <super target> CC=/path/to/the/executable
+make -f sa.make <super target> CC=/path/to/the/executable
 ```
 
 Train for only 5 epochs, with a dummy network, and only 10 images per data loader. Useful for debugging:
 ```
-make -f prostate.make <anything really> NET=Dimwit EPC=5 DEBUG=--debug
+make -f sa.make <anything really> NET=Dimwit EPC=5 DEBUG=--debug
 ```
 
 Rebuild everything even if already exist:
 ```
-make -f prostate.make <a> -B
+make -f sa.make <a> -B
 ```
 
 Only print the commands that will be run (useful to check recipes are properly defined):
 ```
-make -f prostate.make <a> -n
+make -f sa.make <a> -n
 ```
 
 ## Related Implementation and Dataset
