@@ -118,11 +118,10 @@ make -f prostate.make <a> -n
 ## Related Implementation and Dataset
 * [Mathilde Bateson](https://github.com/mathilde-b), [Hoel Kervadec](https://github.com/HKervadec), [Jose Dolz](https://github.com/josedolz), Hervé Lombaert, Ismail Ben Ayed. Constrained Domain Adaptation for Image Segmentation. In IEEE Transactions on Medical Imaging, 2021. [[paper]](https://ieeexplore.ieee.org/document/9382339) [[implementation]](https://github.com/mathilde-b/CDA) 
 * [Hoel Kervadec](https://github.com/HKervadec), [Jose Dolz](https://github.com/josedolz), Meng Tang, Eric Granger, Yuri Boykov, Ismail Ben Ayed. Constrained-CNN losses for weakly supervised segmentation. In Medical Image Analysis, 2019. [[paper]](https://www.sciencedirect.com/science/article/pii/S1361841518306145?via%3Dihub) [[code]](https://github.com/LIVIAETS/SizeLoss_WSS)
-* Prostate Dataset Available from: https://raw.githubusercontent.com/liuquande/SAML/
-* Heart Dataset Available from: 
+* Prostate Dataset and details: https://raw.githubusercontent.com/liuquande/SAML/
+* Heart Dataset and details: https://github.com/carrenD/Medical-Cross-Modality-Domain-Adaptation
+* Spine Dataset and details: https://ivdm3seg.weebly.com/ 
 
-## Acknowledgment
-This code is heavily borrowed from [Pytorch-Deeplab](https://github.com/speedinghzl/Pytorch-Deeplab).
 
 ## Note
 The model and code are available for non-commercial research purposes only.
