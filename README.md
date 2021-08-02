@@ -62,7 +62,7 @@ prostate/
 The network takes png or nii files as an input. The gt folder contains gray-scale images of the ground-truth, where the gray-scale level is the number of the class.
 
 ### Class-ratio (sizes) prior
-The class-ratio prior is estimated from anatomical knowledge in our applications. In our implementation, is it estimated for each slice in the target domain training and validation sets. It estimated once, before the start of the adaptation phase, and saved in a csv file. 
+The class-ratio prior is estimated from anatomical knowledge for each application. In our implementation, is it estimated for each slice in the target domain training and validation sets. It estimated once, before the start of the adaptation phase, and saved in a csv file. 
 
 Scheme
 ```
