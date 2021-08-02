@@ -1,6 +1,7 @@
 # SFDA
-Source-Free Domain Adaptation for Image Segmentation
-by [Mathilde Bateson](https://github.com/mathilde-b), [Hoel Kervadec](https://github.com/HKervadec), [Jose Dolz](https://github.com/josedolz), Hervé Lombaert, Ismail Ben Ayed @ETS Montréal
+We introduce Source-Free Domain Adaptation for Image Segmentation.
+
+[Mathilde Bateson](https://github.com/mathilde-b), [Hoel Kervadec](https://github.com/HKervadec), [Jose Dolz](https://github.com/josedolz), Hervé Lombaert, Ismail Ben Ayed @ETS Montréal
 
 Code of our submission at [MICCAI 2020](https://link.springer.com/chapter/10.1007/978-3-030-59710-8_48) and its ongoing journal extension. Video of the MICCAI talk is available: 
 https://www.youtube.com/watch?v=ALYaa5xrxbQ&ab_channel=MB
