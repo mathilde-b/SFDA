@@ -17,7 +17,7 @@ M_WEIGHTS_ul = results/prostate/cesource/last.pkl
 NET = UNet
 
 
-TRN = results/sa/sfda
+TRN = results/prostate/sfda
 
 
 REPO = $(shell basename `git rev-parse --show-toplevel`)
