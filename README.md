@@ -59,7 +59,8 @@ prostate/
             ...
         ...
 ```
-The network takes png or nii files as an input. The gt folder contains gray-scale images of the ground-truth, where the gray-scale level are the number of the class (namely, 0 and 1).
+The network takes png or nii files as an input. The gt folder contains gray-scale images of the ground-truth, where the gray-scale level is the number of the class.
+
 ### results
 ```
 results/
