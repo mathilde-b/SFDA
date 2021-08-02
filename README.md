@@ -42,20 +42,20 @@ Non-exhaustive list:
 For instance
 ```
 MICCAI/
-    train/
+    prostate/
         img/
-            case_10_0_0.png
+            Case_10_0.png
             ...
         gt/
-            case_10_0_0.png
+            Case_10_0.png
             ...
         ...
     val/
         img/
-            case_10_0_0.png
+            Case_11_0.png
             ...
         gt/
-            case_10_0_0.png
+            Case_11_0.png
             ...
         ...
 ```
@@ -67,7 +67,7 @@ results/
         fs/
             best_epoch_3d/
                 val/
-                    case_10_0_0.png
+                    Case_11_0.png
                     ...
             iter000/
                 val/
