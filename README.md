@@ -103,11 +103,11 @@ results/
             ...
         sfda/
             ...
-        best.pkl # best model saved
+        params.txt # saves all the argparse parameters of the model 
+	best_3d.pkl # best model saved
+	last.pkl # last epoch
         IMG_target_metrics.csv # metrics over time, csv
-        best_epoch.txt # number of the best epoch
-        val_dice.npy # log of all the metric over time for each image and class
-        val_dice.png # Plot over time
+        3dbestepoch.txt # number and 3D Dice of the best epoch 
         ...
     whs/
         ...
