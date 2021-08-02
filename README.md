@@ -83,7 +83,6 @@ Sample from sizes/prostate_sa.csv :
 | ------------- | ------------- |
 | Case00_0.nii  | [147398.0, 827.0]  | [140225, 6905]
 | Case00_1.nii  | [147080.0, 1145.0]  | [140225, 6905]
-...
 | Case00_14.nii  | [148225.0, 0.0] | [148225, 0]
 
 Note that the true val_gt_size is unknown, so it is not directly used in our proposed SFDA. However, in our framework an image-level annotation is available for the target training dataset: the "Tag" of each class k, such that we put estimatedsize_classk=0 if val_gt_size_k = 0
