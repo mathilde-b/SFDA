@@ -1,4 +1,4 @@
-# SFDA
+# Source-Free Domain Adaptation
 We introduce Source-Free Domain Adaptation for Image Segmentation.
 
 [Mathilde Bateson](https://github.com/mathilde-b), [Hoel Kervadec](https://github.com/HKervadec), [Jose Dolz](https://github.com/josedolz), Hervé Lombaert, Ismail Ben Ayed @ETS Montréal
