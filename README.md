@@ -13,7 +13,7 @@ Please cite our paper if you find it useful for your research.
 
 ```
 
-@inproceedings{BatesonSRDA,
+@inproceedings{BatesonSFDA,
 	Author = {Bateson, Mathilde and Kervadec, Hoel and Dolz, Jose and Lombaert, Herv{\'e} and Ben Ayed, Ismail},
 	Booktitle = {Medical Image Computing and Computer Assisted Intervention -- MICCAI 2020},
 	Pages = {490--499},
