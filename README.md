@@ -60,7 +60,7 @@ prostate/
             ...
         ...
 ```
-The network takes png or nii files as an input. The gt folder contains gray-scale images of the ground-truth, where the gray-scale level is the number of the class.
+The network takes png or nii files as an input. The gt folder contains gray-scale images of the ground-truth, where the gray-scale level is the number of the class (0,1,...K).
 
 ### Class-ratio (sizes) prior
 The class-ratio prior is estimated from anatomical knowledge for each application. In our implementation, is it estimated for each slice in the target domain training and validation sets. It estimated once, before the start of the adaptation phase, and saved in a csv file. 
@@ -86,11 +86,21 @@ Sample from sizes/prostate_sa.csv :
 | Case00_1.nii  | [147080.0, 1145.0]  | [140225, 6905]
 | Case00_14.nii  | [148225.0, 0.0] | [148225, 0]
 
-NB 1: the true val_gt_size is unknown, so it is not directly used in our proposed SFDA. However, in our framework an image-level annotation is available for the target training dataset: the "Tag" of each class k, such that Estimated_Size_classk=0 if val_gt_size_k = 0
+NB 1 : there should be no overlap between names of the slices in the training and validation sets (Case00_0.nii,...).
 
-NB 2: in our implementation, the csv file contains the sizes in pixels, and the KL Divergence loss divides the size in pixels by (w*h) the height and weight of the slice, to obtain the class-ratio prior.
+NB 2: in our implementation, the csv file contains the sizes priors in pixels, and the KL Divergence loss divides the size in pixels by (w*h) the height and weight of the slice, to obtain the class-ratio prior.
 
-NB 3 : there should be no overlap between names of the slices in the training and validation sets (Case00_0.nii,...).
+NB 3: Estimated_Size_class0 + Estimated_Size_class1 + ... + Estimated_Size_classk = w*h
+
+NB 4: the true val_gt_size is unknown, so the it is not directly used in our proposed SFDA. However, in our framework an image-level annotation is available for the target training dataset: the "Tag" of each class k, indicating the presence or absence of class k in the slice. Therefore, Estimated_Size_classk=0 if val_gt_size_k = 0 and Estimated_Size_classk>0 if val_gt_size_k > 0
+
+NB 5: To have an idea of the "capacity" of the SFDA model in the ideal case where a the ground truth class-ratio prior is known, it is useful to run the upper bound model SFDA_TrueSize choosing the column "val_gt_size" instead of "dumbpredwtags". This can be changed in the makefile :
+
+```
+results/sa/SFDA_TrueSize: OPT = --target_losses="[('EntKLProp', {'inv_consloss':True,'lamb_se':1,'lamb_conspred':1, 'lamb_consprior':1,'ivd':True,'weights_se':[0.1,0.9],'idc_c': [1],'curi':True,'power': 1},'PredictionBounds', \
+      {'margin':0,'dir':'high','idc':[0,1],'predcol':'val_gt_size','power': 1, 'mode':'percentage','sizefile':'sizes/prostate_sa.csv'},'norm_soft_size',1)]" \
+           --val_target_folders="$(TT_DATA)"  --l_rate 0.000001 --n_epoch 100 --lr_decay 0.9 --batch_size 10 --target_folders="$(TT_DATA)" --model_weights="$(M_WEIGHTS_ul)" \
+```
 
 ### results
 ```
