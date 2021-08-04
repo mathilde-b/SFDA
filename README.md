@@ -42,23 +42,24 @@ Non-exhaustive list:
 ### datasets
 For instance
 ```
-prostate/
-    train/
-        IMG/
-            Case10_0.png
-            ...
-        GT/
-            Case10_0.png
-            ...
-        ...
-    val/
-        IMG/
-            Case11_0.png
-            ...
-        GT/
-            Case11_0.png
-            ...
-        ...
+data
+    prostate/
+	    train/
+		IMG/
+		    Case10_0.png
+		    ...
+		GT/
+		    Case10_0.png
+		    ...
+		...
+	    val/
+		IMG/
+		    Case11_0.png
+		    ...
+		GT/
+		    Case11_0.png
+		    ...
+		...
 ```
 The network takes png or nii files as an input. The gt folder contains gray-scale images of the ground-truth, where the gray-scale level is the number of the class (0,1,...K).
 
