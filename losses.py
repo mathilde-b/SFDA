@@ -36,243 +36,9 @@ class DiceLoss():
 
         return loss
 
-class WeightedEntKLProp():
-    """
-    CE between proportions
-    """
-    def __init__(self, **kwargs):
-        self.power: int = kwargs["power"]
-        self.__fn__ = getattr(__import__('utils'), kwargs['fn'])
-        self.curi: bool = kwargs["curi"]
-        self.idc: bool = kwargs["idc_c"]
-        self.ivd: bool = kwargs["ivd"]
-        self.weights: List[float] = kwargs["weights_se"]
-        self.lamb_se: float = kwargs["lamb_se"]
-        self.lamb_c: float = kwargs["lamb_c"]
-
-    def __call__(self, probs: Tensor, target: Tensor, bounds) -> Tensor:
-        assert simplex(probs)  # and simplex(target)  # Actually, does not care about second part
-
-        b, _, w, h = probs.shape  # type: Tuple[int, int, int, int]
-        est_prop: Tensor = self.__fn__(probs,self.power)
-        if self.curi:
-            if self.ivd:
-                bounds = bounds[:,:,0] 
-            gt_prop = torch.ones_like(est_prop)*bounds/(w*h)
-            gt_prop = gt_prop[:,:,0]
-        else:
-            gt_prop: Tensor = self.__fn__(target,self.power) # the power here is actually useless if we have 0/1 gt labels
-        if not self.curi:
-            gt_prop = gt_prop.squeeze(2)
-        est_prop = est_prop.squeeze(2)
-        log_est_prop: Tensor = (est_prop + 1e-10).log()
-        loss_cons = - torch.einsum("bc,bc->b", [gt_prop, log_est_prop])
-        # Adding division by batch_size to normalise 
-        loss_cons /= b
-        
-        log_p: Tensor = (probs + 1e-10).log()
-        mask: Tensor = probs.type((torch.float32))
-        mask_weighted = torch.einsum("bcwh,c->bcwh", [mask, Tensor(self.weights).to(mask.device)])
-        loss_se = - torch.einsum("bcwh,bcwh->b", [mask_weighted, log_p])
-        loss_se /= mask.sum() + 1e-10
-
-        w1 = - torch.einsum("bcwh,bcwh->b", [mask_weighted, log_p]) + 1e-10
-        w2 = torch.einsum("bc->b", [est_prop[:,1:]])
-        w = torch.div(w2,w1).detach()
-        #print(w1,w2)
-        if torch.rand(1)>0.995:
-            print(w)
-
-        assert loss_se.requires_grad == probs.requires_grad  # Handle the case for validation
-
-        loss = self.lamb_se*loss_se + self.lamb_c*loss_cons
-
-        loss = torch.einsum("b,b->", [loss,w])
-
-        return loss, self.lamb_se*loss_se, self.lamb_c*loss_cons
 
 
-class CEKLPropbyClass():
-    """
-    """
-    def __init__(self, **kwargs):
-        self.power: int = kwargs["power"]
-        self.__fn__ = getattr(__import__('utils'), kwargs['fn'])
-        self.curi: bool = kwargs["curi"]
-        self.idc: bool = kwargs["idc_c"]
-        self.ivd: bool = kwargs["ivd"]
-        self.weights: List[float] = kwargs["weights_ce"]
-        self.lamb_ce: float = kwargs["lamb_ce"]
-        self.lamb_conspred: float = kwargs["lamb_conspred"]
-        self.lamb_consprior: float = kwargs["lamb_consprior"]
-        self.inv_consloss: float = kwargs["inv_consloss"]
-        #self.classcol: bool = kwargs['classcol']
-        #self.classfile: float = kwargs['classfile']
-        #self.classes = pd.read_csv(self.classfile)
-
-    def __call__(self, probs: Tensor, target: Tensor, bounds) -> Tensor:
-        assert simplex(probs)  # and simplex(target)  # Actually, does not care about second part
-        b, _, w, h = probs.shape  # type: Tuple[int, int, int, int]
-        predicted_mask = probs2one_hot(probs).detach()
-        est_prop_mask = self.__fn__(predicted_mask,self.power).squeeze(2)
-        #print(probs[0,0,100:110,100:110],"PROBS background")
-        est_prop: Tensor = self.__fn__(probs,self.power)
-        #cols = list(self.classes.columns)[1:]
-        #cls = self.classes.loc[self.classes.ids == filename,cols].values[0]
-        #cls = torch.tensor([cls]).squeeze(0).type(torch.float32)
-        if self.curi:
-            if self.ivd:
-                bounds = bounds[:,:,0] 
-            gt_prop = torch.ones_like(est_prop)*bounds/(w*h)
-            gt_prop = gt_prop[:,:,0]
-            #gt_prop_for = torch.einsum("bc->b",gt_prop[:,1:])
-            #print(gt_prop_for,"gt_prop_for")
-            #gt_prop[:,0] = 1 - gt_prop_for 
-
-        else:
-            gt_prop: Tensor = self.__fn__(target,self.power) # the power here is actually useless if we have 0/1 gt labels
-        if not self.curi:
-            gt_prop = gt_prop.squeeze(2)
-        #print(gt_prop,"gt_prop")
-        est_prop = est_prop.squeeze(2)
-        log_est_prop: Tensor = (est_prop + 1e-10).log()
-        if not self.inv_consloss:
-            loss_cons_prior = - torch.einsum("bc,bc->bc", [gt_prop, log_est_prop])
-            loss_cons_prior = torch.einsum("bc,c->", [loss_cons_prior,cls]).type(torch.float32) 
-            condition = torch.isnan(gt_prop)
-            row_cond = condition.all(1)
-            #row_cond = ~row_cond
-            #loss_cons_prior = loss_cons_prior[row_cond,:]
-            #loss_cons_prior = - torch.einsum("bc->",loss_cons_prior)
-            loss_cons_prior = - torch.einsum("bc,bc->bc", [gt_prop, log_est_prop])
-            loss_cons_prior = torch.einsum("bc,c->", [loss_cons_prior,cls]).type(torch.float32) 
-            loss_cons_pred = - torch.einsum("bc,bc->", [est_prop_mask, log_est_prop])
-        else:
-            #print(gt_prop,'gt_prop')
-            log_gt_prop: Tensor = (gt_prop + 1e-10).log()
-            #print(log_gt_prop,"log_gt_prop")
-            log_est_prop_mask: Tensor = (est_prop_mask + 1e-10).log()
-            #print(log_est_prop_mask,"log_est_prop_mask")
-            #print(est_prop,"est_prop")
-            loss_cons_prior = - torch.einsum("bc,bc->bc", [est_prop, log_gt_prop])  + torch.einsum("bc,bc->bc", [est_prop, log_est_prop])
-            #print(loss_cons_prior,'loss at beginning')
-            keep_class = ~torch.isnan(gt_prop)
-            #print(keep_class,"keep class")
-            #row_cond = condition.all(1)
-            #keep_class = ~row_cond
-            #print(keep_class)
-            gt_prop_nona = gt_prop 
-            gt_prop_nona[gt_prop != gt_prop] = 0 
-            #gt_prop_nona = torch.nan_to_num(gt_prop) 
-            log_gt_prop_nona = (gt_prop_nona + 1e-10).log() 
-            loss_cons_prior: Tensor = -est_prop*log_gt_prop_nona + est_prop*log_est_prop
-            #loss_cons_prior_nona = loss_cons_prior[row_cond,:]
-            #print(loss_cons_prior,"after rowcond")
-            #loss_cons_prior_nona = - torch.nansum(loss_cons_prior_nona)
-            #print(keep_class.shape,'keepclass shape')
-            loss_cons_prior = torch.einsum("bc,bc->bc", [loss_cons_prior,keep_class.type(torch.float32)]).type(torch.float32) 
-            #print(loss_cons_prior,'after remove classes')
-            loss_cons_prior = torch.einsum("bc->",loss_cons_prior)
-            #print(loss_cons_prior,'final loss_cons_prior')
-            #print(keep_class.sum().item())
-            if keep_class.sum().item()==0:
-                print('loss to zero')
-                loss_cons_prior_nona =torch.zeros(1, requires_grad=True).to(loss_cons_prior.device)
-
-            #loss_cons_prior = - torch.einsum("bc,bc->", [est_prop, log_gt_prop])
-            #loss_cons_prior = -torch.einsum("bc,bc->", [est_prop, log_gt_prop]) + torch.einsum("bc,bc->", [est_prop, log_est_prop])
-            loss_cons_pred = - torch.einsum("bc,bc->", [est_prop, log_est_prop_mask]) + torch.einsum("bc,bc->", [est_prop, log_est_prop])
-            #loss_cons_pred = - torch.einsum("bc,bc->", [est_prop, log_est_prop_mask])
-        # Adding division by batch_size to normalise 
-        loss_cons_prior /= b
-        loss_cons_pred /= b
-        log_p: Tensor = (probs + 1e-10).log()
-        mask: Tensor = predicted_mask.type((torch.float32))
-        mask_weighted = torch.einsum("bcwh,c->bcwh", [mask, Tensor(self.weights).to(mask.device)])
-        loss_ce = - torch.einsum("bcwh,bcwh->", [mask_weighted, log_p])
-        loss_ce /= mask.sum() + 1e-10
-        l = self.lamb_consprior*loss_cons_prior
-        assert loss_se.requires_grad == probs.requires_grad  # Handle the case for validation
-        #loss = self.lamb_se*loss_se + self.lamb_conspred*loss_cons
-        return self.lamb_ce*loss_ce, self.lamb_conspred*loss_cons_pred, l ,est_prop 
-
-
-class CEKLProp2():
-    """
-    """
-    def __init__(self, **kwargs):
-        self.power: int = kwargs["power"]
-        self.__fn__ = getattr(__import__('utils'), kwargs['fn'])
-        self.curi: bool = kwargs["curi"]
-        self.idc: bool = kwargs["idc_c"]
-        self.ivd: bool = kwargs["ivd"]
-        self.weights: List[float] = kwargs["weights_ce"]
-        self.lamb_ce: float = kwargs["lamb_ce"]
-        self.lamb_conspred: float = kwargs["lamb_conspred"]
-        self.lamb_consprior: float = kwargs["lamb_consprior"]
-        self.inv_consloss: float = kwargs["inv_consloss"]
-        self.best_losses: float = kwargs["best_losses"]
-
-    def __call__(self, probs: Tensor, target: Tensor, bounds) -> Tensor:
-        assert simplex(probs)  # and simplex(target)  # Actually, does not care about second part
-        b, _, w, h = probs.shape  # type: Tuple[int, int, int, int]
-        predicted_mask = probs2one_hot(probs).detach()
-        est_prop_mask = self.__fn__(predicted_mask,self.power).squeeze(2)
-        #print(probs[0,0,100:110,100:110],"PROBS background")
-        est_prop: Tensor = self.__fn__(probs,self.power)
-        bool_keep_class = ~torch.isnan(bounds).all(1)
-        if self.curi:
-            if self.ivd:
-                bounds = bounds[:,:,0] 
-            gt_prop = torch.ones_like(est_prop)*bounds/(w*h)
-            gt_prop = gt_prop[:,:,0]
-            gt_prop_for = torch.einsum("bc->b",gt_prop[:,1:])
-            #print(gt_prop_for,"gt_prop_for")
-            gt_prop[:,0] = 1 - gt_prop_for 
-        else:
-            gt_prop: Tensor = self.__fn__(target,self.power) # the power here is actually useless if we have 0/1 gt labels
-        if not self.curi:
-            gt_prop = gt_prop.squeeze(2)
-        #print(gt_prop,"gt_prop")
-        est_prop = est_prop.squeeze(2)
-        log_est_prop: Tensor = (est_prop + 1e-10).log()
-        if not self.inv_consloss:
-            loss_cons_prior = - torch.einsum("bc,bc->bc", [gt_prop, log_est_prop])
-            condition = torch.isnan(loss_cons_prior)
-            row_cond = condition.all(1)
-            row_cond = ~row_cond
-            loss_cons_prior = loss_cons_prior[row_cond,:]
-            loss_cons_prior = - torch.einsum("bc->",loss_cons_prior)
-            loss_cons_pred = - torch.einsum("bc,bc->", [est_prop_mask, log_est_prop])
-        else:
-            #print(gt_prop,'gt_prop')
-            log_gt_prop: Tensor = (gt_prop + 1e-10).log()
-            #print(log_gt_prop,"log_gt_prop")
-            log_est_prop_mask: Tensor = (est_prop_mask + 1e-10).log()
-            #print(log_est_prop_mask,"log_est_prop_mask")
-            #print(est_prop,"est_prop")
-            loss_cons_prior = - torch.einsum("bc,bc->b", [est_prop, log_gt_prop])  + torch.einsum("bc,bc->b", [est_prop, log_est_prop])
-            if self.best_losses:
-                loss_cons_prior = loss_cons_prior*(loss_cons_prior<0.1).int()
-            loss_cons_prior = - torch.einsum("b->",loss_cons_prior)
-            #loss_cons_prior = -torch.einsum("bc,bc->", [est_prop, log_gt_prop]) + torch.einsum("bc,bc->", [est_prop, log_est_prop])
-            loss_cons_pred = - torch.einsum("bc,bc->", [est_prop, log_est_prop_mask]) + torch.einsum("bc,bc->", [est_prop, log_est_prop])
-            #loss_cons_pred = - torch.einsum("bc,bc->", [est_prop, log_est_prop_mask])
-        # Adding division by batch_size to normalise 
-        loss_cons_prior /= b
-        loss_cons_pred /= b
-        log_p: Tensor = (probs + 1e-10).log()
-        mask: Tensor = predicted_mask.type((torch.float32))
-        mask_weighted = torch.einsum("bcwh,c->bcwh", [mask, Tensor(self.weights).to(mask.device)])
-        loss_ce = - torch.einsum("bcwh,bcwh->", [mask_weighted, log_p])
-        loss_ce /= mask.sum() + 1e-10
-        l = self.lamb_consprior*loss_cons_prior
-        assert loss_se.requires_grad == probs.requires_grad  # Handle the case for validation
-        #loss = self.lamb_se*loss_se + self.lamb_conspred*loss_cons
-        return self.lamb_ce*loss_ce, self.lamb_conspred*loss_cons_pred, l ,est_prop 
-
-
-class EntKLProp2():
+class EntKLProp():
     """
     CE between proportions
     """
@@ -286,7 +52,6 @@ class EntKLProp2():
         self.lamb_se: float = kwargs["lamb_se"]
         self.lamb_conspred: float = kwargs["lamb_conspred"]
         self.lamb_consprior: float = kwargs["lamb_consprior"]
-        self.inv_consloss: float = kwargs["inv_consloss"]
 
     def __call__(self, probs: Tensor, target: Tensor, bounds) -> Tensor:
         assert simplex(probs)  # and simplex(target)  # Actually, does not care about second part
@@ -307,23 +72,13 @@ class EntKLProp2():
             gt_prop = gt_prop.squeeze(2)
         est_prop = est_prop.squeeze(2)
         log_est_prop: Tensor = (est_prop + 1e-10).log()
-        #print("gt prop:",torch.round(gt_prop*256*256),"est_prop:",torch.round(est_prop*256*256))
-        #tgt_prop: Tensor = self.__fn__(target,self.power) # the power here is actually useless if we have 0/1 gt labels
-        #print("gt prop:",torch.round(gt_prop*256*256),"tgt_prop:",torch.round(tgt_prop*256*256))
-        #print(predicted_mask.shape,"predicted_mask shape")
-        if not self.inv_consloss:
-            loss_cons_prior = - torch.einsum("bc,bc->", [gt_prop, log_est_prop])
-            loss_cons_pred = - torch.einsum("bc,bc->", [est_prop_mask, log_est_prop])
-        else:
-            log_gt_prop: Tensor = (gt_prop + 1e-10).log()
-            log_est_prop_mask: Tensor = (est_prop_mask + 1e-10).log()
 
-            loss_cons_prior = - torch.einsum("bc,bc->", [est_prop, log_gt_prop])  + torch.einsum("bc,bc->", [est_prop, log_est_prop])
-            loss_cons_pred = - torch.einsum("bc,bc->", [est_prop, log_est_prop_mask]) + torch.einsum("bc,bc->", [est_prop, log_est_prop])
+        log_gt_prop: Tensor = (gt_prop + 1e-10).log()
+        log_est_prop_mask: Tensor = (est_prop_mask + 1e-10).log()
 
+        loss_cons_prior = - torch.einsum("bc,bc->", [est_prop, log_gt_prop])  + torch.einsum("bc,bc->", [est_prop, log_est_prop])
         # Adding division by batch_size to normalise 
         loss_cons_prior /= b
-        loss_cons_pred /= b
         log_p: Tensor = (probs + 1e-10).log()
         mask: Tensor = probs.type((torch.float32))
         mask_weighted = torch.einsum("bcwh,c->bcwh", [mask, Tensor(self.weights).to(mask.device)])
@@ -331,50 +86,8 @@ class EntKLProp2():
         loss_se /= mask.sum() + 1e-10
 
         assert loss_se.requires_grad == probs.requires_grad  # Handle the case for validation
-        #loss = self.lamb_se*loss_se + self.lamb_conspred*loss_cons
-        return self.lamb_se*loss_se, self.lamb_conspred*loss_cons_pred, self.lamb_consprior*loss_cons_prior,est_prop 
 
-
-class EntKLProp():
-    """
-    CE between proportions
-    """
-    def __init__(self, **kwargs):
-        self.power: int = kwargs["power"]
-        self.__fn__ = getattr(__import__('utils'), kwargs['fn'])
-        self.curi: bool = kwargs["curi"]
-        self.idc: bool = kwargs["idc_c"]
-        self.ivd: bool = kwargs["ivd"]
-        self.weights: List[float] = kwargs["weights_se"]
-        self.lamb_se: float = kwargs["lamb_se"]
-        self.lamb_c: float = kwargs["lamb_c"]
-
-    def __call__(self, probs: Tensor, target: Tensor, bounds) -> Tensor:
-        assert simplex(probs)  # and simplex(target)  # Actually, does not care about second part
-        b, _, w, h = probs.shape  # type: Tuple[int, int, int, int]
-        est_prop: Tensor = self.__fn__(probs,self.power)
-        if self.curi:
-            if self.ivd:
-                bounds = bounds[:,:,0] 
-            gt_prop = torch.ones_like(est_prop)*bounds/(w*h)
-            gt_prop = gt_prop[:,:,0]
-        else:
-            gt_prop: Tensor = self.__fn__(target,self.power) # the power here is actually useless if we have 0/1 gt labels
-        if not self.curi:
-            gt_prop = gt_prop.squeeze(2)
-        est_prop = est_prop.squeeze(2)
-        log_est_prop: Tensor = (est_prop + 1e-10).log()
-        loss_cons = - torch.einsum("bc,bc->", [gt_prop, log_est_prop])
-        # Adding division by batch_size to normalise 
-        loss_cons /= b
-        log_p: Tensor = (probs + 1e-10).log()
-        mask: Tensor = probs.type((torch.float32))
-        mask_weighted = torch.einsum("bcwh,c->bcwh", [mask, Tensor(self.weights).to(mask.device)])
-        loss_se = - torch.einsum("bcwh,bcwh->", [mask_weighted, log_p])
-        loss_se /= mask.sum() + 1e-10
-        assert loss_se.requires_grad == probs.requires_grad  # Handle the case for validation
-        loss = self.lamb_se*loss_se + self.lamb_c*loss_cons
-        return loss, self.lamb_se*loss_se, self.lamb_c*loss_cons,est_prop
+        return self.lamb_se*loss_se, self.lamb_consprior*loss_cons_prior,est_prop 
 
 
 class SelfEntropy():
@@ -768,68 +481,6 @@ class CEPropPos():
         #print(loss)
         return loss
 
-
-class InvCEProp():
-    """
-    CE between proportions
-    """
-    def __init__(self, **kwargs):
-        self.power: int = kwargs["power"]
-        self.__fn__ = getattr(__import__('utils'), kwargs['fn'])
-
-        self.curi: bool = kwargs["curi"]
-        self.idc: bool = kwargs["idc"]
-        self.ivd: bool = kwargs["ivd"]
-        #print(f"Initialized {self.__class__.__name__} with {kwargs}")
-
-    def __call__(self, probs: Tensor, target: Tensor, bounds) -> Tensor:
-        #print('bounds',torch.round(bounds*10**2)/10**2)
-        assert simplex(probs)  # and simplex(target)  # Actually, does not care about second part
-
-        b, _, w, h = probs.shape  # type: Tuple[int, int, int, int]
-        #if self.fgt:
-        #    two = bounds.shape  # scalar or vector
-        #else:
-        #    _,_,k,two = bounds.shape
-        #assert two == 2
-        # est_prop is the proportion estimated by the network
-        #if len(bounds.shape)==3:
-        #    bounds = torch.unsqueeze(bounds, 2) 
-        est_prop: Tensor = self.__fn__(probs,self.power)
-        #print(est_prop,est_prop.shape)
-        #print('est_prop',torch.round(est_prop*10**2)/10**2)
-        # gt_prop is the proportion in the ground truth
-        if self.curi:
-            #print(bounds)
-            if self.ivd:
-                bounds = bounds[:,:,0] 
-                #gt_prop = gt_prop[:,:,0]
-            #bounds = bounds[:,:,0,0] 
-            #print(bounds.shape,est_prop.shape)
-            gt_prop = torch.ones_like(est_prop)*bounds/(w*h)
-            gt_prop = gt_prop[:,:,0]
-            # fix background
-            #gt_prop = gt_prop
-            #gt_prop1: Tensor = self.__fn__(target,self.power) # the power here is actually useless if we have 0/1 gt labels
-            #print(gt_prop.shape)
-        else:
-            gt_prop: Tensor = self.__fn__(target,self.power) # the power here is actually useless if we have 0/1 gt labels
-        #gt_prop = (gt_prop/(w*h)).type(torch.float32).flatten()
-
-        #value = (value/(w*h)).type(torch.float32).flatten()
-        #print(gt_prop.shape)
-        if not self.curi:
-            gt_prop = gt_prop.squeeze(2)
-        est_prop = est_prop.squeeze(2)
-        log_gt_prop: Tensor = (gt_prop + 1e-10).log()
-        log_est_prop: Tensor = (est_prop + 1e-10).log()
-        #print(log_est_prop.shape)
-        #print(gt_prop,log_est_prop)
-        loss = - torch.einsum("bc,bc->", [est_prop, log_gt_prop]) + torch.einsum("bc,bc->", [est_prop, log_est_prop])
-        #print('gt',np.round(gt_prop[0,1].item(),3),'est',np.round(est_prop[0,1].item(),3))
-        assert loss.requires_grad == probs.requires_grad  # Handle the case for validation
-        #print(loss)
-        return loss
 
 
 class CEProp():
