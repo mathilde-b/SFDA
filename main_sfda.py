@@ -190,22 +190,9 @@ def do_epoch(args, mode: str, net: Any, device: Any, epc: int,
                     else:
                         #lamb = 1 # only the pred
                         lamb_cons_pred = 0 # only the size prior
-                    if eval(args.target_losses)[0][0]=="EntKLProp" or eval(args.target_losses)[0][0]=="WeightedEntKLProp":
-                        loss, loss_1,loss_2,est_prop =  loss_fn(pred_probs, label, bound)
-                    elif eval(args.target_losses)[0][0]=="EntKLProp2" or eval(args.target_losses)[0][0]=="CEKLProp2" or eval(args.target_losses)[0][0]=="CEKLPropbyClass": 
-                        loss_1, loss_cons_pred,loss_cons_prior,est_prop =  loss_fn(pred_probs, label, bound)
-                        #print(loss_1,loss_cons_pred,loss_cons_prior)
-                        loss_2 = lamb_cons_pred*loss_cons_pred + loss_cons_prior
-                        #loss_2 = loss_cons_pred + loss_cons_prior
-                        loss_both = loss_1 + loss_2 # loss_1 is selfent or crossent
-                        #print(loss_both,'loss_both')
-                        if args.best_losses:
-                            #if loss_both < 0.1/np.sqrt(epc+1) and optimizer: 
-                            if loss_both < 0.1/(epc+1)**(1/3) and optimizer: 
-                                count_losses += 1
-                                loss = loss_both
-                        else:
-                            loss = loss_both # loss_1 is selfent or crossent
+                    if eval(args.target_losses)[0][0]=="EntKLProp": 
+                        loss_1, loss_cons_prior,est_prop =  loss_fn(pred_probs, label, bound)
+                        loss = loss_1 + loss_cons_prior 
                     else:
                         loss =  loss_fn(pred_probs, label, bound)
                         loss = w*loss
