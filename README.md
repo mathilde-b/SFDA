@@ -45,18 +45,18 @@ For instance
 prostate/
     train/
         IMG/
-            Case_10_0.png
+            Case10_0.png
             ...
         GT/
-            Case_10_0.png
+            Case10_0.png
             ...
         ...
     val/
         IMG/
-            Case_11_0.png
+            Case11_0.png
             ...
         GT/
-            Case_11_0.png
+            Case11_0.png
             ...
         ...
 ```
@@ -99,7 +99,7 @@ results/
         fs/
             best_epoch_3d/
                 val/
-                    Case_11_0.png
+                    Case11_0.png
                     ...
             iter000/
                 val/
