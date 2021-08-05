@@ -49,7 +49,7 @@ results/whs/fs: OPT =  --target_losses="$(L_OR)" \
 	     --network UNet --model_weights="$(M_WEIGHTS_uce)" --lr_decay 1 \
 
 # SFDA. Put --saveim False and remove --entmap and --do_hd 90 to speed up
-results/whs/sfda: OPT = --target_losses="[('EntKLProp2', {'inv_consloss':True,'curi':True,'lamb_se':1, 'lamb_consprior':1, 'ivd':False,'weights_se':[0.02, 0.27, 0.18, 0.21, 0.32],'idc_c': [1,2,3,4],'power': 1},'PredictionBounds', \
+results/whs/sfda: OPT = --target_losses="[('EntKLProp', {'curi':True,'lamb_se':1, 'lamb_consprior':1, 'ivd':False,'weights_se':[0.02, 0.27, 0.18, 0.21, 0.32],'idc_c': [1,2,3,4],'power': 1},'PredictionBounds', \
         {'margin':0,'dir':'high','idc':[1],'predcol':'meansourcewtags', 'power': 1,'fake':False, 'mode':'percentage','prop':False,'sizefile':'sizes/whs.csv'},'norm_soft_size',1)]"\
           --batch_size 22  --model_weights="$(M_WEIGHTS_uce)"  --ontest --l_rate 0.000001 --lr_decay 0.9 --weight_decay 1e-3 \
 
