@@ -42,7 +42,7 @@ $(PACK): $(TRN) $(INF_0) $(TRN_1) $(INF_1) $(TRN_2) $(TRN_3) $(TRN_4)
 # tar -zc -f $@ $^  # Use if pigz is not available
 
 # first train on the source dataset only:
-results/ivd/cesource: OPT =  --target_losses="$(L_OR)" --target_dataset "data/ivd_transverse/" \
+results/ivd/cesource: OPT =  --target_losses="$(L_OR)" --target_dataset "data/ivd_transverse/" --target_folders="$(S_DATA)" --val_target_folders="$(S_DATA)" \
 	     --network UNet --model_weights="" --lr_decay 1 \
 	    
 # full supervision
@@ -59,7 +59,7 @@ results/ivd/cesourceim: OPT =  --target_losses="$(L_OR)" \
 	   --mode makeim  --batch_size 1  --l_rate 0 --model_weights="results/sa/cesource/last.pkl" --pprint --lr_decay 1 --n_epoch 1 --saveim True\
 
 $(TRN) :
-	$(CC) $(CFLAGS) main_sfda.py --batch_size 24 --n_class 2 --workdir $@_tmp --target_dataset "data/prostate_target" \
+	$(CC) $(CFLAGS) main_sfda.py --batch_size 24 --n_class 2 --workdir $@_tmp --target_dataset "data/ivd_transverse" \
                 --metric_axis 1  --n_epoch 100 --dice_3d --l_rate 5e-4 --weight_decay 1e-4 --grp_regex="$(G_RGX)" --network=$(NET) --val_target_folders="$(TT_DATA)"\
                   --lr_decay 0.9  --model_weights="$(M_WEIGHTS_uce)"  --target_folders="$(TT_DATA)" $(OPT) $(DEBUG)
 	mv $@_tmp $@
