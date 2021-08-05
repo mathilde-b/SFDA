@@ -120,7 +120,7 @@ results/sa/SFDA_TrueSize: OPT = --target_losses="[('EntKLProp', {'inv_consloss':
            --val_target_folders="$(TT_DATA)"  --l_rate 0.000001 --n_epoch 100 --lr_decay 0.9 --batch_size 10 --target_folders="$(TT_DATA)" --model_weights="$(M_WEIGHTS_ul)" \
 ```
 
-NB 6 : If you change the name of the columns (val_ids, dumbpredwtags) in the size file, you should change them in the [`bounds.py`](bounds.py) file as well as in the [`sa.make`](sa.make) makefile. 
+NB 6 : If you change the name of the columns (val_ids, dumbpredwtags) in the size file, you should change them in the [`bounds.py`](bounds.py) file as well as in the [`prostate.make`](prostate.make) makefile. 
 
 ### results
 ```
@@ -155,34 +155,34 @@ The losses are defined in the [`losses.py`](losses.py) file.
 ## Running our main experiment
 Once you have downladed the data and organized it such as in the scheme above, run the main experiment as follows:
 ```
-make -f sa.make 
+make -f prostate.make 
 ```
 This will first run the source training model, which will be saves in results/cesource, and then the SFDA model, which will be saved in results/sfda.
 
 ## Cool tricks
 Remove all assertions from the code to speed up. Usually done after making sure it does not crash for one complete epoch:
 ```
-make -f sa.make <anything really> CFLAGS=-O
+make -f prostate.make <anything really> CFLAGS=-O
 ```
 
 Use a specific python executable:
 ```
-make -f sa.make <super target> CC=/path/to/the/executable
+make -f prostate.make <super target> CC=/path/to/the/executable
 ```
 
 Train for only 5 epochs, with a dummy network, and only 10 images per data loader. Useful for debugging:
 ```
-make -f sa.make <anything really> NET=Dimwit EPC=5 DEBUG=--debug
+make -f prostate.make <anything really> NET=Dimwit EPC=5 DEBUG=--debug
 ```
 
 Rebuild everything even if already exist:
 ```
-make -f sa.make <a> -B
+make -f prostate.make <a> -B
 ```
 
 Only print the commands that will be run (useful to check recipes are properly defined):
 ```
-make -f sa.make <a> -n
+make -f prostate.make <a> -n
 ```
 
 
