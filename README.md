@@ -43,7 +43,24 @@ Non-exhaustive list:
 For instance
 ```
 data
-    prostate/
+    prostate_source/
+	    train/
+		IMG/
+		    Case10_0.png
+		    ...
+		GT/
+		    Case10_0.png
+		    ...
+		...
+	    val/
+		IMG/
+		    Case11_0.png
+		    ...
+		GT/
+		    Case11_0.png
+		    ...
+		...
+    prostate_target/
 	    train/
 		IMG/
 		    Case10_0.png
@@ -95,7 +112,7 @@ NB 3: Estimated_Size_class0 + Estimated_Size_class1 + ... + Estimated_Size_class
 
 NB 4: the true val_gt_size is unknown, so the it is not directly used in our proposed SFDA. However, in our framework an image-level annotation is available for the target training dataset: the "Tag" of each class k, indicating the presence or absence of class k in the slice. Therefore, Estimated_Size_classk=0 if val_gt_size_k = 0 and Estimated_Size_classk>0 if val_gt_size_k > 0
 
-NB 5: To have an idea of the "capacity" of the SFDA model in the ideal case where a the ground truth class-ratio prior is known, it is useful to run the upper bound model SFDA_TrueSize choosing the column "val_gt_size" instead of "dumbpredwtags". This can be changed in the makefile :
+NB 5: To have an idea of the capacity of the SFDA model in the ideal case where the ground truth class-ratio prior is known, it is useful to run the upper bound model SFDA_TrueSize choosing the column "val_gt_size" instead of "dumbpredwtags". This can be changed in the makefile :
 
 ```
 results/sa/SFDA_TrueSize: OPT = --target_losses="[('EntKLProp', {'inv_consloss':True,'lamb_se':1,'lamb_consprior':1,'ivd':True,'weights_se':[0.1,0.9],'idc_c': [1],'curi':True,'power': 1},'PredictionBounds', \
@@ -132,8 +149,16 @@ archives/
 ## Interesting bits
 The losses are defined in the [`losses.py`](losses.py) file. 
 
+
+## Running our main experiment
+Once you have downladed the data and organized it such as in the scheme above, run the main experiment as follows:
+```
+make -f sa.make 
+```
+This will first run the source training model, which will be saves in results/cesource, and then the SFDA model, which will be saved in results/sfda.
+
 ## Cool tricks
-Remove all assertions from the code. Usually done after making sure it does not crash for one complete epoch:
+Remove all assertions from the code to speed up. Usually done after making sure it does not crash for one complete epoch:
 ```
 make -f sa.make <anything really> CFLAGS=-O
 ```
@@ -162,7 +187,7 @@ make -f sa.make <a> -n
 ## Related Implementation and Dataset
 * [Mathilde Bateson](https://github.com/mathilde-b), [Hoel Kervadec](https://github.com/HKervadec), [Jose Dolz](https://github.com/josedolz), Hervé Lombaert, Ismail Ben Ayed. Constrained Domain Adaptation for Image Segmentation. In IEEE Transactions on Medical Imaging, 2021. [[paper]](https://ieeexplore.ieee.org/document/9382339) [[implementation]](https://github.com/mathilde-b/CDA) 
 * [Hoel Kervadec](https://github.com/HKervadec), [Jose Dolz](https://github.com/josedolz), Meng Tang, Eric Granger, Yuri Boykov, Ismail Ben Ayed. Constrained-CNN losses for weakly supervised segmentation. In Medical Image Analysis, 2019. [[paper]](https://www.sciencedirect.com/science/article/pii/S1361841518306145?via%3Dihub) [[code]](https://github.com/LIVIAETS/SizeLoss_WSS)
-* Prostate Dataset and details: https://raw.githubusercontent.com/liuquande/SAML/
+* Prostate Dataset and details: https://raw.githubusercontent.com/liuquande/SAML/. The SA site dataset was used a target domain, the SB site was used as source domain.
 * Heart Dataset and details: https://github.com/carrenD/Medical-Cross-Modality-Domain-Adaptation
 * Spine Dataset and details: https://ivdm3seg.weebly.com/ 
 
