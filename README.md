@@ -188,9 +188,9 @@ make -f sa.make <a> -n
 ## Related Implementation and Dataset
 * [Mathilde Bateson](https://github.com/mathilde-b), [Hoel Kervadec](https://github.com/HKervadec), [Jose Dolz](https://github.com/josedolz), Hervé Lombaert, Ismail Ben Ayed. Constrained Domain Adaptation for Image Segmentation. In IEEE Transactions on Medical Imaging, 2021. [[paper]](https://ieeexplore.ieee.org/document/9382339) [[implementation]](https://github.com/mathilde-b/CDA) 
 * [Hoel Kervadec](https://github.com/HKervadec), [Jose Dolz](https://github.com/josedolz), Meng Tang, Eric Granger, Yuri Boykov, Ismail Ben Ayed. Constrained-CNN losses for weakly supervised segmentation. In Medical Image Analysis, 2019. [[paper]](https://www.sciencedirect.com/science/article/pii/S1361841518306145?via%3Dihub) [[code]](https://github.com/LIVIAETS/SizeLoss_WSS)
-* Prostate Dataset and details: https://raw.githubusercontent.com/liuquande/SAML/. The SA site dataset was used a target domain, the SB site was used as source domain.
-* Heart Dataset and details: https://github.com/carrenD/Medical-Cross-Modality-Domain-Adaptation
-* Spine Dataset and details: https://ivdm3seg.weebly.com/ 
+* Prostate Dataset and details: https://raw.githubusercontent.com/liuquande/SAML/. The SA site dataset was used a target domain, the SB site was used as source domain. For both datasets, we use 20 scans for training, and the remaining 10 scans for validation.
+* Heart Dataset and details: We used the preprocessed dataset from Dou et al. : https://github.com/carrenD/Medical-Cross-Modality-Domain-Adaptation. The data is in tfs records, it should be transformed to nii or png before running the makefile.
+* Spine Dataset and details: https://ivdm3seg.weebly.com/ . From the original coronal view, we transposed the slices to transverse view in our experiments. We set the water modality (Wat) as the source and the in-phase (IP) modality as the target domain. From this dataset, 13 scans are used for training, and the remaining 3 scans for validation.
 
 
 ## Note
