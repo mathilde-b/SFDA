@@ -59,8 +59,8 @@ results/whs/cesourceim: OPT =  --target_losses="$(L_OR)" \
 
 $(TRN) :
 	$(CC) $(CFLAGS) main_sfda.py --batch_size 24 --n_class 5 --workdir $@_tmp --target_dataset "data/ct" \
-                --metric_axis 1  --n_epoch 100 --dice_3d --l_rate 5e-4 --weight_decay 1e-4 --grp_regex="$(G_RGX)" --network=$(NET) --val_target_folders="$(DATA)"\
-                  --lr_decay 0.9  --model_weights="$(M_WEIGHTS_uce)"  --target_folders="$(DATA)" $(OPT) $(DEBUG)
+                --metric_axis 1  --n_epoch 100 --dice_3d --l_rate 5e-4 --weight_decay 1e-4 --grp_regex="$(G_RGX)" --network=$(NET) --val_target_folders="$(TT_DATA)"\
+                  --lr_decay 0.9  --model_weights="$(M_WEIGHTS_uce)"  --target_folders="$(TT_DATA)" $(OPT) $(DEBUG)
 	mv $@_tmp $@
 
 
