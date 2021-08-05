@@ -10,10 +10,6 @@ CFLAGS = -O
 #the regex of the slices in the target dataset
 #for the prostate
 G_RGX = Case\d+_\d+
-#for the heart
-G_RGX1 = slice\d+_1
-#for the spine
-G_RGX2 = Subj_\d+_\d+
 
 TT_DATA = [('IMG', nii_transform2, False), ('GT', nii_gt_transform2, False), ('GT', nii_gt_transform2, False)]
 L_OR = [('CrossEntropy', {'idc': [0,1], 'weights':[1,1]}, None, None, None, 1)]
@@ -53,7 +49,7 @@ results/prostate/fs: OPT =  --target_losses="$(L_OR)" \
 	     --network UNet --model_weights="$(M_WEIGHTS_uce)" --lr_decay 1 \
 
 # SFDA. Put --saveim False and remove --entmap and --do_hd 90 to speed up
-results/prostate/sfda: OPT = --target_losses="[('EntKLProp2', {'inv_consloss':True,'lamb_se':1, 'lamb_consprior':1,'ivd':True,'weights_se':[0.1,0.9],'idc_c': [1],'curi':True,'power': 1},'PredictionBounds', \
+results/prostate/sfda: OPT = --target_losses="[('EntKLProp', {'inv_consloss':True,'lamb_se':1, 'lamb_consprior':1,'ivd':True,'weights_se':[0.1,0.9],'idc_c': [1],'curi':True,'power': 1},'PredictionBounds', \
       {'margin':0,'dir':'high','idc':[0,1],'predcol':'dumbpredwtags','power': 1, 'mode':'percentage','sizefile':'sizes/prostate.csv'},'norm_soft_size',1)]" \
            --val_target_folders="$(TT_DATA)" --do_hd 90 --saveim True --entmap --l_rate 0.000001 --n_epoch 100 --lr_decay 0.9 --target_folders="$(TT_DATA)" --model_weights="$(M_WEIGHTS_ul)" \
 
