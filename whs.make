@@ -11,7 +11,7 @@ CFLAGS = -O
 #for the heart
 G_RGX1 = slice\d+_1
 
-TT_DATA = [('IMG', nii_transform2, False), ('GT', nii_gt_transform, False), ('GT', nii_gt_transform, False)]
+TT_DATA = [('IMG', nii_transform, False), ('GT', nii_gt_transform, False), ('GT', nii_gt_transform, False)]
 L_OR = [('CrossEntropy', {'idc': [0,1,2,3,4], 'weights':[1,1,1,1,1]}, None, None, None, 1)]
 NET = UNet
 
