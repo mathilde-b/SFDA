@@ -51,7 +51,7 @@ results/prostate/fs: OPT =  --target_losses="$(L_OR)" \
 # SFDA. Put --saveim False and remove --entmap and --do_hd 90 to speed up
 results/prostate/sfda: OPT = --target_losses="[('EntKLProp', {'lamb_se':1, 'lamb_consprior':1,'ivd':True,'weights_se':[0.1,0.9],'idc_c': [1],'curi':True,'power': 1},'PredictionBounds', \
       {'margin':0,'dir':'high','idc':[0,1],'predcol':'dumbpredwtags','power': 1, 'mode':'percentage','sizefile':'sizes/prostate.csv'},'norm_soft_size',1)]" \
-           --val_target_folders="$(TT_DATA)" --do_hd 90 --saveim True --entmap --l_rate 0.000001 --n_epoch 100 --lr_decay 0.9 --target_folders="$(TT_DATA)" --model_weights="$(M_WEIGHTS_ul)" \
+           --do_hd 90 --saveim True --entmap --l_rate 0.000001 --n_epoch 100 --lr_decay 0.9 --model_weights="$(M_WEIGHTS_ul)" \
 
 #inference mode : saves the segmentation masks for a specific model saved as pkl file (ex. "results/sa/cesource/last.pkl" below):
 results/prostate/cesourceim: OPT =  --target_losses="$(L_OR)" \
@@ -59,8 +59,8 @@ results/prostate/cesourceim: OPT =  --target_losses="$(L_OR)" \
 
 $(TRN) :
 	$(CC) $(CFLAGS) main_sfda.py --batch_size 24 --n_class 2 --workdir $@_tmp --target_dataset "data/prostate_target" \
-                --metric_axis 1  --n_epoch 100 --dice_3d --l_rate 5e-4 --weight_decay 1e-4 --grp_regex="$(G_RGX)" --network=$(NET) --val_target_folders="$(DATA)"\
-                  --lr_decay 0.9  --model_weights="$(M_WEIGHTS_uce)"  --target_folders="$(DATA)" $(OPT) $(DEBUG)
+                --metric_axis 1  --n_epoch 100 --dice_3d --l_rate 5e-4 --weight_decay 1e-4 --grp_regex="$(G_RGX)" --network=$(NET) --val_target_folders="$(TT_DATA)"\
+                  --lr_decay 0.9  --model_weights="$(M_WEIGHTS_uce)"  --target_folders="$(TT_DATA)" $(OPT) $(DEBUG)
 	mv $@_tmp $@
 
 
