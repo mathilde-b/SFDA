@@ -49,7 +49,7 @@ results/prostate/fs: OPT =  --target_losses="$(L_OR)" \
 	     --network UNet --model_weights="$(M_WEIGHTS_uce)" --lr_decay 1 \
 
 # SFDA. Put --saveim False and remove --entmap and --do_hd 90 to speed up
-results/prostate/sfda: OPT = --target_losses="[('EntKLProp', {'inv_consloss':True,'lamb_se':1, 'lamb_consprior':1,'ivd':True,'weights_se':[0.1,0.9],'idc_c': [1],'curi':True,'power': 1},'PredictionBounds', \
+results/prostate/sfda: OPT = --target_losses="[('EntKLProp', {'lamb_se':1, 'lamb_consprior':1,'ivd':True,'weights_se':[0.1,0.9],'idc_c': [1],'curi':True,'power': 1},'PredictionBounds', \
       {'margin':0,'dir':'high','idc':[0,1],'predcol':'dumbpredwtags','power': 1, 'mode':'percentage','sizefile':'sizes/prostate.csv'},'norm_soft_size',1)]" \
            --val_target_folders="$(TT_DATA)" --do_hd 90 --saveim True --entmap --l_rate 0.000001 --n_epoch 100 --lr_decay 0.9 --target_folders="$(TT_DATA)" --model_weights="$(M_WEIGHTS_ul)" \
 
