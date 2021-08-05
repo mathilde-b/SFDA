@@ -110,14 +110,13 @@ NB 2: in our implementation, the csv file contains the sizes priors in pixels, a
 
 NB 3: Estimated_Size_class0 + Estimated_Size_class1 + ... + Estimated_Size_classk = w*h
 
-NB 4: the true val_gt_size is unknown, so the it is not directly used in our proposed SFDA. However, in our framework an image-level annotation is available for the target training dataset: the "Tag" of each class k, indicating the presence or absence of class k in the slice. Therefore, Estimated_Size_classk=0 if val_gt_size_k = 0 and Estimated_Size_classk>0 if val_gt_size_k > 0
+NB 4: the true val_gt_size is unknown, sO it is not directly used in our proposed SFDA. However, in our framework an image-level annotation is available for the target training dataset: the "Tag" of each class k, indicating the presence or absence of class k in the slice. Therefore, Estimated_Size_classk=0 if val_gt_size_k = 0 and Estimated_Size_classk>0 if val_gt_size_k > 0
 
 NB 5: To have an idea of the capacity of the SFDA model in the ideal case where the ground truth class-ratio prior is known, it is useful to run the upper bound model SFDA_TrueSize choosing the column "val_gt_size" instead of "dumbpredwtags". This can be changed in the makefile :
 
 ```
 results/sa/SFDA_TrueSize: OPT = --target_losses="[('EntKLProp', {'inv_consloss':True,'lamb_se':1,'lamb_consprior':1,'ivd':True,'weights_se':[0.1,0.9],'idc_c': [1],'curi':True,'power': 1},'PredictionBounds', \
-      {'margin':0,'dir':'high','idc':[0,1],'predcol':'val_gt_size','power': 1, 'mode':'percentage','sizefile':'sizes/prostate
-      .csv'},'norm_soft_size',1)]" \
+      {'margin':0,'dir':'high','idc':[0,1],'predcol':'val_gt_size','power': 1, 'mode':'percentage','sizefile':'sizes/prostate.csv'},'norm_soft_size',1)]" \
            --val_target_folders="$(TT_DATA)"  --l_rate 0.000001 --n_epoch 100 --lr_decay 0.9 --batch_size 10 --target_folders="$(TT_DATA)" --model_weights="$(M_WEIGHTS_ul)" \
 ```
 
