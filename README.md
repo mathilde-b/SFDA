@@ -120,7 +120,7 @@ results/sa/SFDA_TrueSize: OPT = --target_losses="[('EntKLProp', {'inv_consloss':
            --val_target_folders="$(TT_DATA)"  --l_rate 0.000001 --n_epoch 100 --lr_decay 0.9 --batch_size 10 --target_folders="$(TT_DATA)" --model_weights="$(M_WEIGHTS_ul)" \
 ```
 
-NB 6 : If you change the name of the columns (val_ids, dumbpredwtags) in the size file, you should change them in the  [`bounds.py`](bounds.py) file. 
+NB 6 : If you change the name of the columns (val_ids, dumbpredwtags) in the size file, you should change them in the [`bounds.py`](bounds.py) file as well as in the [`sa.make`](sa.make) makefile. 
 
 ### results
 ```
