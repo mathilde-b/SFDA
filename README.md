@@ -90,7 +90,7 @@ sizes/
     whs.csv
     ivd.csv
 ```
-The size csv file should be as follow:
+The size csv file should be organized as follows:
 
 | val_ids | dumbpredwtags
 | ------------- | ------------- |
