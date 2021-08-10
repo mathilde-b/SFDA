@@ -37,6 +37,9 @@ Non-exhaustive list:
 * Matplotlib
 * Scikit-image
 * zsh
+* tqdm
+* pandas
+* scikit-image
 
 ## Data scheme
 ### datasets
