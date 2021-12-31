@@ -5,7 +5,7 @@ import re
 import random
 from operator import itemgetter
 from pathlib import Path
-from itertools import repeat
+from itertools import repeat,chain
 from functools import partial
 from typing import Any, Callable, BinaryIO, Dict, List, Match, Pattern, Tuple, Union
 import csv
@@ -16,8 +16,8 @@ from torch import Tensor
 from PIL import Image
 from torchvision import transforms
 from torch.utils.data import Dataset, DataLoader
-from MySampler import Sampler
 import os
+from MySampler import Sampler
 from utils import id_, map_, class2one_hot, augment, read_nii_image,read_unknownformat_image
 from utils import simplex, sset, one_hot, pad_to, remap
 
@@ -116,6 +116,16 @@ def get_loaders(args, data_folder: str, subfolders:str,
         partial(class2one_hot, C=n_class),
         itemgetter(0),
     ])
+    gtpng_transform_remap = transforms.Compose([
+        lambda img: np.array(img)[np.newaxis, ...],
+        #lambda nd: np.pad(nd, [(0, 0), (0, 0), (110, 110)], 'constant'),
+        #lambda nd: pad_to(nd, 256, 256),
+        lambda nd: remap({0:0, 1:1,255:1},nd),
+        lambda nd: torch.tensor(nd, dtype=torch.int64),
+        #lambda nd: print(nd.shape,"nd in gt transform"),
+        partial(class2one_hot, C=n_class),
+        itemgetter(0),
+    ])
     gtpng_transform = transforms.Compose([
         lambda img: np.array(img)[np.newaxis, ...],
         #lambda nd: np.pad(nd, [(0, 0), (0, 0), (110, 110)], 'constant'),
@@ -125,6 +135,7 @@ def get_loaders(args, data_folder: str, subfolders:str,
         partial(class2one_hot, C=n_class),
         itemgetter(0),
     ])
+
 
 
     if mode == "target":
@@ -155,12 +166,19 @@ def get_loaders(args, data_folder: str, subfolders:str,
                           C=n_class,
                           in_memory=in_memory, augment=args.augment,
                           bounds_generators=bounds_generators)
+    gen_dataset_noaug = partial(SliceDataset,
+                          transforms=trans,
+                          are_hots=are_hots,
+                          debug=debug,
+                          C=n_class,
+                          in_memory=in_memory, augment=False,
+                          bounds_generators=bounds_generators)
     valgen_dataset = partial(SliceDataset,
                           transforms=val_trans,
                           are_hots=val_are_hots,
                           debug=debug,
                           C=n_class,
-                          in_memory=in_memory, augment=args.augment,
+                          in_memory=in_memory, augment=False,
                           bounds_generators=bounds_generators)
 
     data_loader = partial(DataLoader,
@@ -175,30 +193,53 @@ def get_loaders(args, data_folder: str, subfolders:str,
         train_folders: List[Path] = [Path(data_folder, "trainval", f) for f in folders]
     elif args.valonly:
         train_folders: List[Path] = [Path(data_folder, "val", f) for f in folders]
+    elif args.testonly:
+        train_folders: List[Path] = [Path(data_folder, "test", f) for f in folders]
     #if args.ontrain1:
     #    train_folders: List[Path] = [Path(data_folder, "train1", f) for f in folders]
     # I assume all files have the same name inside their folder: makes things much easier
     train_names: List[str] = map_(lambda p: str(p.name), train_folders[0].glob("*.png"))
     if len(train_names)==0:
         train_names: List[str] = map_(lambda p: str(p.name), train_folders[0].glob("*.nii"))
-        if args.ontrain1:
-            train_names: List[str] = map_(lambda p: str(p.name), train_folders[0].glob("*1.nii"))
-        if mode=="target" and args.ontrain19_1:
-            train_names: List[str] = map_(lambda p: str(p.name), train_folders[0].glob("*19_1.nii"))
-        '''
-        if mode=="target" and args.ontrain019_1:
-            train_names: List[str] = map_(lambda p: str(p.name), train_folders[0].glob("*019_1.nii"))
-        '''
-        if mode=="target" and args.ontrain9_1:
-            train_names: List[str] = map_(lambda p: str(p.name), train_folders[0].glob("*9_1.nii"))
     if len(train_names)==0:
         train_names: List[str] = map_(lambda p: str(p.name), train_folders[0].glob("*.npy"))
     #train_names.sort()
-    #print("train folders[0]",train_folders[0])
-    #print(train_names[:13], "train_names")
-    
+    if args.train_case_nb > 0:
+        # print('hello')
+        vec_prostate = ["Case00", "Case01", "Case03", "Case04", "Case06", "Case09", "Case10", "Case11", "Case13", "Case14",
+               "Case16", "Case18","Case19", "Case21", "Case23", "Case24", "Case25", "Case27", "Case28", "Case29"]
+        vec_ivd = ["Subj_" + str(i) for i in chain(range(1, 5), range(6, 15))]
+        #aug_vec_ivd = ['a'+ v for v in vec_ivd] +['b'+v for v in vec_ivd] +['c'+v for v in vec_ivd] + ['d'+v for v in vec_ivd] + ['w'+v for v in vec_ivd]
+        if args.valonly:
+            vec_ivd = ["Subj_" + str(i) for i in chain(range(0,1), range(5, 6), range(15, 16))]
+            random.shuffle(vec_ivd)
+            aug_vec_ivd = ['a'+ v for v in vec_ivd] +['b'+v for v in vec_ivd]+['w'+v for v in vec_ivd]
+        #vec_ivd +=aug_vec_ivd
+        #print(train_names[0])
+        root_name = re.split('(\d+)', train_names[0])[0]
+        extension = Path(train_names[0]).suffix
+        if root_name=="Case":
+            vec = vec_prostate
+        else:
+            vec = vec_ivd
+        if args.specific_subj:
+            vec = [args.specific_subj]
+        random.shuffle(vec)
+        train_names = []
+        #print(vec,'vec')
+        for i in range(0, args.train_case_nb):
+            tmp_reg = "*"+vec[i] + "_*"+extension
+            print(tmp_reg,'tmp reg')
+            tmp_train_names: List[str] = map_(lambda p: str(p.name), train_folders[0].glob(tmp_reg))
+            train_names = train_names + tmp_train_names
+            #print(train_names)
+
     train_set = gen_dataset(train_names,
                             train_folders)
+    if args.augment:
+        train_set_noaug = gen_dataset_noaug(train_names,
+                                train_folders)
+        train_set = Concat([train_set, train_set_noaug])
     #if fix_size!=[0,0] and len(train_set)<fix_size[0]:
         #nb_to_add= fix_size[0] - len(train_set)
         #print("nb_to_add", nb_to_add)
@@ -214,6 +255,7 @@ def get_loaders(args, data_folder: str, subfolders:str,
     if args.ontest:
         print('on test')
         val_folders: List[Path] = [Path(data_folder, "test", f) for f in valfolders]
+
         #print(val_folders)
     elif args.ontrain:
         print('on train')
@@ -224,9 +266,14 @@ def get_loaders(args, data_folder: str, subfolders:str,
     #print(val_folders,"(val_folders" )
     val_names: List[str] = map_(lambda p: str(p.name), val_folders[0].glob("*.png"))
     if len(val_names)==0:
-        val_names: List[str] = map_(lambda p: str(p.name), val_folders[0].glob("*.nii"))
+        if "slice" in args.grp_regex:
+            val_names: List[str] = map_(lambda p: str(p.name), val_folders[0].glob("ct*.nii"))
+        else:
+            val_names: List[str] = map_(lambda p: str(p.name), val_folders[0].glob("*.nii"))
     if len(val_names)==0:
         val_names: List[str] = map_(lambda p: str(p.name), val_folders[0].glob("*.npy"))
+    if args.tta:
+        val_names: List[str] = map_(lambda p: str(p.name), val_folders[0].glob(tmp_reg))
     #print(val_names, "val_names")
     #val_names.sort()
     val_set = valgen_dataset(val_names,
@@ -342,7 +389,7 @@ class SliceDataset(Dataset):
             raise ValueError(filename)
         if self.augment:
             images = augment(*images)
-
+        #print(np.unique(images[1], "after reading"))
         assert self.check_files()  # Make sure all file exists
         # Final transforms and assertions
         t_tensors: List[Tensor] = [tr(e) for (tr, e) in zip(self.transforms, images)]
@@ -357,6 +404,7 @@ class SliceDataset(Dataset):
             #assert ttensor.shape == (self.C, w, h)
 
         img, gt = t_tensors[:2]
+        #print(np.unique(gt),"np unqie gt in dataloader")
         #print(gt.shape)
         try:
             bounds = [f(img, gt, t, filename) for f, t in zip(self.bounds_generators, t_tensors[2:])]
