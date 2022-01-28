@@ -311,7 +311,6 @@ def main() -> None:
 
     #draw_function(order[:args.n], fig=fig)
     #plt.show()
-    print("scp -r AP50860@koios.logti.etsmtl.ca:../../../data/users/mathilde/ccnn/CDA/SFDAA/" + args.result_fold + ' ./seg/')
     for a in range(0, len(background_names), args.n):
         idx: List[int] = order[a:a + args.n]
         draw_function(order[idx], fig=fig)
