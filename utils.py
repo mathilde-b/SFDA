@@ -13,7 +13,6 @@ from torch import einsum
 from torch import Tensor
 from functools import partial, reduce
 from skimage.io import imsave,imread
-from random import random, uniform, randint
 from PIL import Image, ImageOps
 from scipy.spatial.distance import directed_hausdorff
 import torch.nn as nn
@@ -22,11 +21,11 @@ import torch.nn as nn
 #from pydensecrf.utils import unary_from_softmax
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
+from viewer import display_item
 from typing import Dict
 from PIL import Image, ImageOps
 import nibabel as nib
 import warnings
-import re
 
 # functions redefinitions
 tqdm_ = partial(tqdm, ncols=125,
@@ -36,11 +35,6 @@ tqdm_ = partial(tqdm, ncols=125,
 A = TypeVar("A")
 B = TypeVar("B")
 T = TypeVar("T", Tensor, np.ndarray)
-
-def get_subj_nb(filenames_vec):
-    subj_nb= [int(re.split('(\d+)', x)[1]) for x in filenames_vec]
-    return subj_nb
-
 
 
 def get_weights(list1):
@@ -335,7 +329,6 @@ def class2one_hot(seg: Tensor, C: int) -> Tensor:
     if len(seg.shape) == 2:  # Only w, h, used by the dataloader
         seg = seg.unsqueeze(dim=0)
     #print('range classes:',list(range(C)))
-    
     #print('unique seg:',torch.unique(seg))
     #print("setdiff:",set(torch.unique(seg)).difference(list(range(C))))
     assert sset(seg, list(range(C)))
