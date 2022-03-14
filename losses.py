@@ -177,14 +177,10 @@ class NaivePenalty():
 
         assert simplex(probs)  # and simplex(target)  # Actually, does not care about second part
         #assert probs.shape == target.shape
-        #print(probs.shape, target.shape)
         b, _, w, h = probs.shape  # type: Tuple[int, int, int, int]
-        #print(bounds.shape)
         if len(bounds.shape)==3:
             bounds = torch.unsqueeze(bounds, 2) 
-        #print(bounds.shape)
         _, _, k, two = bounds.shape  # scalar or vector
-        #print(bounds.shape,"bounds shape")
         assert two == 2
         # assert k == 1  # Keep it simple for now
         value: Tensor = self.__fn__(probs[:, self.idc, ...],self.power)
