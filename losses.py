@@ -236,37 +236,21 @@ class KLPropInv():
         assert simplex(probs)  # and simplex(target)  # Actually, does not care about second part
 
         b, _, w, h = probs.shape  # type: Tuple[int, int, int, int]
-        #if self.fgt:
-        #    two = bounds.shape  # scalar or vector
-        #else:
-        #    _,_,k,two = bounds.shape
-        #assert two == 2
         # est_prop is the proportion estimated by the network
         est_prop: Tensor = self.__fn__(probs,self.power)
         #print('est_prop',torch.round(est_prop*10**2)/10**2)
         # gt_prop is the proportion in the ground truth
         if self.curi:
             bounds = bounds[:,0,0] 
-            #print(bounds.shape)
             gt_prop = torch.ones_like(est_prop)*bounds/(w*h)
             gt_prop = gt_prop[:,:,0]
-            #gt_prop1: Tensor = self.__fn__(target,self.power) # the power here is actually useless if we have 0/1 gt labels
-            #print(gt_prop,gt_prop1)
         else:
             gt_prop: Tensor = self.__fn__(target,self.power) # the power here is actually useless if we have 0/1 gt labels
-        #gt_prop = (gt_prop/(w*h)).type(torch.float32).flatten()
-
         est_prop = est_prop.squeeze(2)
-        #value = (value/(w*h)).type(torch.float32).flatten()
-        #print(gt_prop.shape)
         log_gt_prop: Tensor = (gt_prop + 1e-10).log()
         log_est_prop: Tensor = (est_prop + 1e-10).log()
-        #print(log_est_prop.shape)
-        #print(log_gt_prop.shape)
         loss = -torch.einsum("bc,bc->", [est_prop, log_gt_prop]) + torch.einsum("bc,bc->", [est_prop, log_est_prop])
-
         assert loss.requires_grad == probs.requires_grad  # Handle the case for validation
-        #print(loss)
         return loss
 
 
@@ -308,7 +292,6 @@ class BCEGDice():
         loss_ce = - torch.einsum("bcwh,bcwh->", [mask_weighted, log_p])
         loss_ce /= tc.sum() + 1e-10
         loss = loss_ce + self.lamb*loss_gde
-        #print(loss_ce.item(),self.lamb*loss_gde.item())
 
         return loss
 
