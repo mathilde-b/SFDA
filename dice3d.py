@@ -28,11 +28,8 @@ import imageio
 
 
 def dice3d(all_grp,all_inter_card,all_card_gt,all_card_pred,all_pred,all_gt,all_pnames,metric_axis,pprint=False,do_hd=0,best_epoch_val=0):
-    list(filter(lambda a: a != "0.0", all_pnames))
-    list(filter(lambda a: a != 0.0, all_pnames))
     _,C = all_card_gt.shape
     unique_patients = torch.unique(all_grp)
-    list(filter(lambda a: a != 0.0, unique_patients))
     unique_patients = unique_patients[unique_patients != torch.ones_like(unique_patients)*666]
     unique_patients = [u.item() for u in unique_patients] 
     batch_dice = torch.zeros((len(unique_patients), C))
@@ -92,7 +89,6 @@ def dice3d(all_grp,all_inter_card,all_card_gt,all_card_pred,all_pred,all_gt,all_
                             hd_3d_var_vec[j] = hd95(label_pred_c, label_gt_c,[1.25,1.25,2]).item()
                             asd_3d_var_vec[j] = assd(label_pred_c, label_gt_c,[1.25,1.25,2]).item() 
                     else:
-                        #print(len(np.unique(label_pred_c)),len(np.unique(label_gt_c)))
                         hd_3d_var_vec[j]=np.NaN
                         asd_3d_var_vec[j] = np.NaN
                 hd_3d_var=torch.from_numpy(np.asarray(hd_3d_var_vec))# np.nanmean(hd_3d_var_vec)
