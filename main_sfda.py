@@ -227,12 +227,6 @@ def do_epoch(args, mode: str, net: Any, device: Any, epc: int,
             else:
             	loss_cons[sm_slice] = 0
             	loss_tot[sm_slice] = loss_kw[0]
-            #posim_log[sm_slice] = torch.einsum("bcwh->b", [target_gt[:, 1:, :, :]]).detach() > 0
-            
-            #haussdorf_res: Tensor = haussdorf(predicted_mask.detach(), target_gt.detach(), dtype)
-            #assert haussdorf_res.shape == (B, C)
-            #haussdorf_log[sm_slice] = haussdorf_res
-            #print(filenames_source,loss_cons[sm_slice].detach().cpu().numpy(),loss_s[sm_slice].detach().cpu().numpy()) 
             # # Save images
             if savedir and args.saveim and mode =="val":
                 with warnings.catch_warnings():
@@ -243,8 +237,6 @@ def do_epoch(args, mode: str, net: Any, device: Any, epc: int,
                     if args.entmap:
                         ent_map = torch.einsum("bcwh,bcwh->bwh", [-pred_probs, (pred_probs+1e-10).log()])
                         save_images_ent(ent_map, filenames_target, savedir,'ent_map', epc)
-
-          
             # Logging
             big_slice = slice(0, done + B)  # Value for current and previous batches
             stat_dict = {**{f"DSC{n}": all_dices[big_slice, n].mean() for n in metric_axis},
@@ -253,41 +245,22 @@ def do_epoch(args, mode: str, net: Any, device: Any, epc: int,
                            if args.source_metrics else {})}
 
             size_dict = {**{f"SZ{n}": all_sizes[big_slice, n].mean() for n in metric_axis}}
-            #print(stat_dict)
-            #stat_dict = {"dice": torch.index_select(all_dices, 1, indices).mean(),
-            #             "loss": loss_log[big_slice].mean()}
             nice_dict = {k: f"{v:.4f}" for (k, v) in stat_dict.items()}
-            #nice_dict2 = {k: f"{v:.0f}" for (k, v) in size_dict.items()}
-            #nice_dict = dict(nice_dict.items() + nice_dict2.items())
-            #nice_dict = dict(chain.from_iterable(d.iteritems() for d in (nice_dict,nice_dict2)))
             done += B
             tq_iter.set_postfix(nice_dict)
-            #print(f"{desc} " + ', '.join(f"{k}={v}" for (k, v) in nice_dict.items()))
-    #dice_posim = torch.masked_select(all_dices[:, -1], posim_log.type(dtype=torch.uint8)).mean()
-    # dice3D gives back the 3d dice mai on images
-    # if not args.debug:
-    #    dice_3d_log_o, dice_3d_sd_log_o = dice3d(args.workdir, f"iter{epc:03d}", mode, "Subj_\\d+_",args.dataset + mode + '/CT_GT', C)
-    
+            #print(f"{desc} " + ', '.join(f"{k}={v}" for (k, v) in nice_dict.items()))   
     if args.dice_3d and (mode == 'val'):
-    #if args.dice_3d :
-        #dice_3d_log, dice_3d_sd_log,hd95_3d_log, hd95_3d_sd_log=dice3dn(all_grp, all_inter_card, all_card_gt, all_card_pred,all_pred,all_gt,all_pnames,metric_axis,args.pprint,95)
-        dice_3d_log, dice_3d_sd_log,hd95_3d_log, hd95_3d_sd_log = dice3dn2(all_grp, all_inter_card, all_card_gt, all_card_pred,all_pred,all_gt,all_pnames,metric_axis,args.pprint,args.do_hd, best_dice3d_val)
+        dice_3d_log, dice_3d_sd_log,hd95_3d_log, hd95_3d_sd_log = dice3d(all_grp, all_inter_card, all_card_gt, all_card_pred,all_pred,all_gt,all_pnames,metric_axis,args.pprint,args.do_hd, best_dice3d_val)
           
     dice_2d = torch.index_select(all_dices, 1, indices).mean().cpu().numpy()
     target_vec = [ dice_3d_log, dice_3d_sd_log,hd95_3d_log,hd95_3d_sd_log,dice_2d]
-    #size_mean = torch.index_select(all_sizes, 1, indices).mean(dim=0).cpu().numpy()
     size_mean = torch.index_select(all_sizes2, 1, indices).mean(dim=0).cpu().numpy()
     size_gt_mean = torch.index_select(all_gt_sizes, 1, indices).mean(dim=0).cpu().numpy()
-    #print(size_mean.mean())
     mask_pos = torch.index_select(all_sizes2, 1, indices)!=0
     gt_pos = torch.index_select(all_gt_sizes, 1, indices)!=0
-    #mask_pos = torch.index_select(all_sizes, 1, indices)!=0
     size_mean_pos = torch.index_select(all_sizes2, 1, indices).sum(dim=0).cpu().numpy()/mask_pos.sum(dim=0).cpu().numpy()
     gt_size_mean_pos = torch.index_select(all_gt_sizes, 1, indices).sum(dim=0).cpu().numpy()/gt_pos.sum(dim=0).cpu().numpy()
     size_mean2 = torch.index_select(all_sizes2, 1, indices).mean(dim=0).cpu().numpy()
-    #size_mean_pos = torch.index_select(all_sizes, 1, indices).sum(dim=0).cpu().numpy()/mask_pos.sum(dim=0).cpu().numpy()
-    #print(size_mean_pos.mean())
-    #print("epc:",epc,mode,"sz probs:",[np.int(s) for s in size_mean],np.int(size_mean.mean()),"sz mask:",[np.int(s) for s in size_mean2],np.int(size_mean2.mean()),"sz probs pos",[np.int(s) for s in size_mean_pos],np.int(size_mean_pos.mean()))
     losses_vec = [loss_se.mean().item(),loss_cons.mean().item(),loss_tot.mean().item(),np.int(size_mean.mean()),np.int(size_mean_pos.mean()),np.int(size_gt_mean.mean()),np.int(gt_size_mean_pos.mean())]
     if not epc%10:
         df_t = pd.DataFrame({
@@ -295,8 +268,6 @@ def do_epoch(args, mode: str, net: Any, device: Any, epc: int,
            "proposal_size":all_sizes2.cpu()})
         df_t.to_csv(Path(savedir,mode+str(epc)+"sizes.csv"), float_format="%.4f", index_label="epoch")
     return losses_vec, target_vec,source_vec
-
-
 
 def run(args: argparse.Namespace) -> None:
     # save args to dict
@@ -316,30 +287,17 @@ def run(args: argparse.Namespace) -> None:
     n_epoch: int = args.n_epoch
 
     net, optimizer, device, loss_fns, loss_weights, scheduler, n_epoch = setup(args, n_class, dtype)
-    #print(f'> Loss weights cons: {loss_weights}, Loss weights source:{loss_weights_source}')
-    #print("args.source_dataset: ",args.dataset,"args.target_dataset: ",args.target_dataset)
+
     shuffle = True
-    #if args.mix:
-    #    shuffle = True
-    #print("args.dataset",args.dataset)
-    '''
-    loader, loader_val = get_loaders(args, args.dataset,args.source_folders,
-                                           args.batch_size, n_class,
-                                           args.debug, args.in_memory, dtype, shuffle, "source")
-    '''
-    #print("source loader loaded")
     print(args.target_folders)
     target_loader, target_loader_val = get_loaders(args, args.target_dataset,args.target_folders,
                                            args.batch_size, n_class,
                                            args.debug, args.in_memory, dtype, shuffle, "target", args.val_target_folders)
 
-    #print("target loader loaded")
     print("metric axis",metric_axis)
     best_dice_pos: Tensor = np.zeros(1)
     best_dice: Tensor = np.zeros(1)
     best_hd3d_dice: Tensor = np.zeros(1)
-    #best_3d_dice: Tensor = np.zeros(1)
-    #best_3d_dice_source: Tensor = np.zeros(1)
     best_3d_dice: Tensor = 0 
     best_2d_dice: Tensor = 0 
     print("Results saved in ", savedir)
@@ -388,51 +346,8 @@ def run(args: argparse.Namespace) -> None:
                                                                                                n_class,metric_axis,
                                                                                                savedir=savedir,
                                                                                                target_loader=target_loader_val, best_dice3d_val=best_3d_dice)
-       '''
-       print(val_target_vec[0])
-
-       print("val_dice_3d",val_target_vec[0][metric_axis])
-        #print("val_dice_3d", val_target_vec[0][metric_axis].mean()),
-       
-       
-       print('val_target_vec[4]', val_target_vec[4])
-       print('val_target_vec[2]', val_target_vec[2].shape)
-       print(metric_axis)
-       print('val_target_vec[2][metric_axis]',val_target_vec[2][metric_axis])
-       print('val_target_vec[2][metric_axis].mean()',val_target_vec[2][metric_axis].mean())
-        # Save model if better
-       '''
        current_val_target_2d_dice = val_target_vec[4]
        current_val_target_3d_dice = val_target_vec[0]
-       #print(current_val_target_3d_dice, "current_val_target_3d_dice") 
-       '''
-       if current_val_target_hd3d > best_hd3d_dice:
-            best_epoch = i
-            best_hd3d_dice = current_val_target_hd3d
-            with open(Path(savedir, "best_epoch_3dhd.txt"), 'w') as f:
-                f.write(str(i))
-            best_folder_hd3d = Path(savedir, "best_epoch_3dhd")
-            if best_folder_hd3d.exists():
-                rmtree(best_folder_hd3d)
-            copytree(Path(savedir, f"iter{i:03d}"), Path(best_folder_hd3d))
-            torch.save(net, Path(savedir, "best_3dhd.pkl"))
-        
-       current_val_target_3d_dice = val_target_vec[0]
-       
-       if current_val_target_2d_dice > best_2d_dice:
-            best_epoch = i
-            best_2d_dice = current_val_target_2d_dice
-            with open(Path(savedir, "best_epoch_2d.txt"), 'w') as f:
-                f.write(str(i))
-            best_folder_2d = Path(savedir, "best_epoch_2d")
-            if best_folder_2d.exists():
-                rmtree(best_folder_2d)
-            if args.saveim:
-                copytree(Path(savedir, f"iter{i:03d}"), Path(best_folder_2d))
-            torch.save(net, Path(savedir, "best_2d.pkl"))
-       ''' 
-       #print(current_val_target_3d_dice)
-       #print(best_3d_dice)
        if args.dice_3d:
            if current_val_target_3d_dice > best_3d_dice:
                best_epoch = i
@@ -445,15 +360,9 @@ def run(args: argparse.Namespace) -> None:
                if args.saveim:
                     copytree(Path(savedir, f"iter{i:03d}"), Path(best_folder_3d))
            torch.save(net, Path(savedir, "best_3d.pkl"))
-
-       
-        #Save source model if better
-       #current_val_source_3d_dice = val_source_vec[0]
        if not(i % 10) :
             print("epoch",str(i),savedir,'best 3d dice',best_3d_dice)
             torch.save(net, Path(savedir, "epoch_"+str(i)+".pkl"))
-       #print("warning saving pkl every epoch")
-       
        if i == n_epoch - 1:
             with open(Path(savedir, "last_epoch.txt"), 'w') as f:
                 f.write(str(i))
@@ -468,30 +377,6 @@ def run(args: argparse.Namespace) -> None:
        if args.saveim:
            rmtree(Path(savedir, f"iter{i:03d}"))
 
-        #if i == 0:
-         #   keep_tra_baseline_target_vec = tra_baseline_target_vec
-          #  keep_val_baseline_target_vec = val_baseline_target_vec
-        # print(keep_val_baseline_target_vec)
-
-        # print(val_target_vec)
-        # df_t_tmp = pd.DataFrame({
-        #     "val_dice_3d": [val_target_vec[0]],
-        #     "val_dice_3d_sd": [val_target_vec[1]]})
-       if args.source_metrics:
-            df_s_tmp = pd.DataFrame({
-            #"tra_dice_3d": [tra_source_vec[0]],
-            #"tra_dice_3d_sd": [tra_source_vec[1]],
-            #"tra_dice_2d": [tra_source_vec[2]],
-            "val_dice_3d": [val_source_vec[0]],
-            "val_dice_3d_sd": [val_source_vec[1]],
-            "val_dice_2d": [val_source_vec[2]]})
-            if i == 0:
-               df_s = df_s_tmp
-            else:
-                df_s = df_s.append(df_s_tmp)
-            df_s.to_csv(Path(savedir, "_".join((args.source_folders.split("'")[1],"source", args.csv))), float_format="%.4f", index_label="epoch")
-
-       #print(val_target_vec)
        df_t_tmp = pd.DataFrame({
             "epoch":i,
             "tra_loss_s":[tra_losses_vec[0]],
