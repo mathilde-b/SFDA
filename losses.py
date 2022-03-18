@@ -18,7 +18,6 @@ class DiceLoss():
     def __init__(self, **kwargs):
         # Self.idc is used to filter out some classes of the target mask. Use fancy indexing
         self.idc: List[int] = kwargs["idc"]
-        #self.nd: str = kwargs["nd"]
         print(f"Initialized {self.__class__.__name__} with {kwargs}")
 
     def __call__(self, probs: Tensor, target: Tensor, _: Tensor) -> Tensor:
@@ -60,7 +59,6 @@ class EntKLProp():
         est_prop_mask = self.__fn__(predicted_mask,self.power).squeeze(2)
         est_prop: Tensor = self.__fn__(probs,self.power)
         if self.curi:
-            #print(bounds.shape)
             if self.ivd:
                 bounds = bounds[:,:,0] 
                 bounds= bounds.unsqueeze(2)
@@ -106,10 +104,6 @@ class SelfEntropy():
         mask_weighted = torch.einsum("bcwh,c->bcwh", [mask, Tensor(self.weights).to(mask.device)])
         loss = - torch.einsum("bcwh,bcwh->", [mask_weighted, log_p])
         loss /= mask.sum() + 1e-10
-
-        #import matplotlib.pyplot as plt
-        #plt.imshow(probs[:, self.idc, ...].squeeze(0).squeeze(0).detach().cpu().numpy())
-        #plt.imshow(target[:, self.idc, ...].squeeze(0).squeeze(0).detach().cpu().numpy())
 
         return loss
 
@@ -193,8 +187,7 @@ class NaivePenalty():
             value = value.unsqueeze(2)
             lower_b = lower_b/(w*h)
             upper_b = upper_b/(w*h)
-        #    print(np.around(lower_b.cpu().numpy().flatten()), np.around(upper_b.cpu().numpy().flatten()), np.around(value.cpu().detach().numpy().flatten()))
-
+       
         assert value.shape == (b, self.C, k), value.shape
         assert lower_b.shape == upper_b.shape == (b, self.C, k), lower_b.shape
 
@@ -232,7 +225,6 @@ class KLPropInv():
         self.inv_consloss: float = kwargs["inv_consloss"]
 
     def __call__(self, probs: Tensor, target: Tensor, bounds) -> Tensor:
-        #print('bounds',torch.round(bounds*10**2)/10**2)
         assert simplex(probs)  # and simplex(target)  # Actually, does not care about second part
 
         b, _, w, h = probs.shape  # type: Tuple[int, int, int, int]
