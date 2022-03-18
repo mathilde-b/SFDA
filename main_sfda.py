@@ -16,7 +16,7 @@ import pandas as pd
 import torch.nn.functional as F
 from torch import Tensor
 from torch.utils.data import DataLoader
-from dice3d import dice3d, dice3dn,dice3dn2, hd3dn
+from dice3d import dice3d
 from networks import weights_init
 from dataloader import get_loaders
 from utils import map_, save_dict_to_file
@@ -180,16 +180,6 @@ def do_epoch(args, mode: str, net: Any, device: Any, epc: int,
             loss_kw = []
             for loss_fn,label, w, bound in zip(loss_fns,labels, loss_weights, bounds):
                 if w > 0:
-                    if args.lin_aug_w:
-                        if epc <13:
-                            lamb_cons_pred = 0
-                        else:
-                            lamb_cons_pred = min((epc)/20,1)
-                    elif args.both:
-                        lamb_cons_pred = 1
-                    else:
-                        #lamb = 1 # only the pred
-                        lamb_cons_pred = 0 # only the size prior
                     if eval(args.target_losses)[0][0]=="EntKLProp": 
                         loss_1, loss_cons_prior,est_prop =  loss_fn(pred_probs, label, bound)
                         loss = loss_1 + loss_cons_prior 
@@ -198,8 +188,6 @@ def do_epoch(args, mode: str, net: Any, device: Any, epc: int,
                         loss = w*loss
                         loss_1 = loss
                         loss_2 = loss
-                    #pen_count += count_b.detach()
-                    #print(count_b.detach())
                     loss_kw.append(loss_1.detach())
                     loss_kw.append(loss_2.detach())
            # Backward
@@ -207,15 +195,8 @@ def do_epoch(args, mode: str, net: Any, device: Any, epc: int,
                 loss.backward()
                 optimizer.step()
             # Compute and log metrics
-            #dices: Tensor = dice_coef(predicted_mask.detach(), target.detach())
-            # baseline_dices: Tensor = dice_coef(labels[0].detach(), target.detach())
-            #batch_dice: Tensor = dice_batch(predicted_mask.detach(), target.detach())
-            # assert batch_dice.shape == (C,) and dices.shape == (B, C), (batch_dice.shape, dices.shape, B, C)
-            #print(predicted_mask.shape,target_gt.shape)
             dices, inter_card, card_gt, card_pred = dice_coef(predicted_mask.detach(), target_gt.detach())
             assert dices.shape == (B, C), (dices.shape, B, C)
-            #n_digits = 2
-            #print(torch.round(dices * 10**n_digits) / (10**n_digits))
             sm_slice = slice(done, done + B)  # Values only for current batch
             all_dices[sm_slice, ...] = dices
             if eval(args.target_losses)[0][0] in ["EntKLProp","WeightedEntKLProp","EntKLProp2","CEKLProp2"]:
@@ -224,9 +205,6 @@ def do_epoch(args, mode: str, net: Any, device: Any, epc: int,
             all_gt_sizes[sm_slice, ...] = torch.sum(target_gt,dim=(2,3)) 
             #all_sizes2[sm_slice, ...] = torch.sum(target_gt,dim=(2,3)) 
             # # for 3D dice
-            #print(filenames_target)
-            #print(torch.FloatTensor([int(re.split('_', x)[1]) for x in filenames_target]).unsqueeze(1).repeat(1,C))
-            #print(filenames_target, "filenames target")
             if 'slice' in args.grp_regex:
                 all_grp[sm_slice, ...] = torch.FloatTensor([int(re.split('_',re.split('slice',x)[1])[0]) for x in filenames_target]).unsqueeze(1).repeat(1,C)
                 #all_grp[sm_slice, ...] = torch.FloatTensor([int(re.split('_',re.split('Subj',x)[1])[0]) for x in filenames_target]).unsqueeze(1).repeat(1,C)
@@ -235,7 +213,6 @@ def do_epoch(args, mode: str, net: Any, device: Any, epc: int,
             else:
                 all_grp[sm_slice, ...] = int(re.split('_', filenames_target[0])[1]) * torch.ones([1, C])
             all_pnames[sm_slice] = filenames_target
-            #print(all_pnames)
             all_inter_card[sm_slice, ...] = inter_card
             all_card_gt[sm_slice, ...] = card_gt
             all_card_pred[sm_slice, ...] = card_pred
@@ -622,25 +599,5 @@ def get_args() -> argparse.Namespace:
 
 
 if __name__ == '__main__':
-
-#    for i in range(0,15):
-
- #       args=argparse.Namespace(augment=False, batch_size=12, bounds_on_fgt=False, bounds_on_train_stats='', cpu=False, csv='metrics.csv', dataset='data/all_transverse', debug=False, dtype='torch.float32', flr=False, grp_regex='Subj_\\d+_\\d+', in_memory=False, l_rate=0.0005, lin_aug_w=False, metric_axis=[1], mix=True, model_weights='results/Inn/JCESource/best_3d.pkl', n_class=2, n_epoch=10, network='ENet', pho=1, power=0.9, resize=0, scheduler='DummyScheduler', scheduler_params='{}', source_folders="[('Inn', png_transform, False), ('GT', gt_transform, True),('WatonInn_pjce', gt_transform, True)]", source_losses="[('CrossEntropy', {'idc': [0,1], 'weights':[1,1]}, None, None, None, 1)]", source_metrics=False, target_dataset='data/all_transverse', target_folders="[('Inn', png_transform, False), ('GT', gt_transform, True),('WatonInn_pjce', gt_transform, True)]", target_losses="[('NaivePenalty', {'idc': [1],'power': 1},'PreciseBoundsOnWeakWTags', {'margin':0.1,'idc':[1], 'power': 1, 'mode':'percentage'},'soft_size',80)]", weight_decay=0.0001, workdir='results/Inn/PWSizeLossNs_jce/')
-    # args = argparse.Namespace(batch_size=4,cpu=False, csv='metrics.csv', dataset='data/all_transverse',
-	# 	    target_dataset='data/all_transverse', mix=True, metric_axis=[1], augment=False,
-    #                           debug=False, dtype='torch.float32', power=0.9,lin_aug_w=False,
-    #                           bounds_on_fgt=False, bounds_on_train_stats='',
-    #                           folders="[('Wat', png_transform, False), ('GT', gt_transform, False),"
-    #                                   "('GT', gt_transform, False)]",flr=False,
-    #                           target_folders="[('Inn', png_transform, False), ('GT', gt_transform, False)]+"
-    #                                          "[('GT', gt_transform, False),('GT', gt_transform, False),('GT', gt_transform, False)]",
-    #                           grp_regex='Subj_\\d+_\\d+', in_memory=False, l_rate=0.0005, weight_decay=1e-4,
-    #                           losses="[('NaivePenalty', {'idc': [1]},'PredictionBoundswTags', "
-    #                           " {'margin':0.1,'idc':[1], 'mode':'percentage','net': 'results/ls_winr2/pred_size40.pkl'} , 'soft_size',1),('SelfEntropy', {'idc': [0,1], 'weights':[1,1]}, None, None, None,0 ),"
-    #                             " ('CEProp', {'fgt':True, 'power': 3}, 'PredictionValues',{'margin':0.1,'mode':'percentage','idc':[1],'sizefile':'results/trainval_size_Inn/ls_winr2_40/trainvalreg_metrics_C2.csv'}, 'norm_soft_size', 1)]",
-    #                           losses_source="[('CrossEntropy', {'idc': [0,1], 'weights':[1,1]}, None, None, None, 1)]",
-    #                           model_weights='results/all_transverse/fse/best_3d.pkl', n_class=2, n_epoch=150, network='ENet', pho=1.0, resize=0,
-	# 		      scheduler='DummyScheduler', scheduler_params='{}', workdir='results/Inn/foo')
-    #
     run(get_args())
-    #    run(args)
+
