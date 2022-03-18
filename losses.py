@@ -238,7 +238,6 @@ class KLPropInv():
         b, _, w, h = probs.shape  # type: Tuple[int, int, int, int]
         # est_prop is the proportion estimated by the network
         est_prop: Tensor = self.__fn__(probs,self.power)
-        #print('est_prop',torch.round(est_prop*10**2)/10**2)
         # gt_prop is the proportion in the ground truth
         if self.curi:
             bounds = bounds[:,0,0] 
