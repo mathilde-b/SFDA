@@ -99,7 +99,6 @@ def do_epoch(args, mode: str, net: Any, device: Any, epc: int,
 
     total_it_t, total_images_t = len(target_loader), len(target_loader.dataset)
     total_iteration = total_it_t
-    #total_iteration = 2
     total_images = total_images_t
 
     if args.debug:
@@ -129,7 +128,6 @@ def do_epoch(args, mode: str, net: Any, device: Any, epc: int,
     posim_log: Tensor = torch.zeros((total_images), dtype=dtype, device=device)
     haussdorf_log: Tensor = torch.zeros((total_images, C), dtype=dtype, device=device)
     all_grp: Tensor = torch.zeros((total_images, C), dtype=dtype, device=device)
-    #all_pnames = np.empty([total_images]).astype('U256') 
     all_pnames = np.zeros([total_images]).astype('U256') 
     dice_3d_log: Tensor = torch.zeros((1, C), dtype=dtype, device=device)
     dice_3d_sd_log: Tensor = torch.zeros((1, C), dtype=dtype, device=device)
@@ -137,11 +135,8 @@ def do_epoch(args, mode: str, net: Any, device: Any, epc: int,
     hd95_3d_sd_log: Tensor = torch.zeros((1, C), dtype=dtype, device=device)
     tq_iter = tqdm_(enumerate(target_loader), total=total_iteration, desc=desc)
     done: int = 0
-    #ratio_losses = 0
     n_warmup = args.n_warmup
     mult_lw = [pho ** (epc - n_warmup + 1)] * len(loss_weights)
-    #if epc > 100:
-    #    mult_lw = [pho ** 100] * len(loss_weights)
     mult_lw[0] = 1
     loss_weights = [a * b for a, b in zip(loss_weights, mult_lw)]
     losses_vec, source_vec, target_vec, baseline_target_vec = [], [], [], []
