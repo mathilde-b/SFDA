@@ -265,7 +265,6 @@ def do_epoch(args, mode: str, net: Any, device: Any, epc: int,
     return losses_vec, target_vec,source_vec
 
 def run(args: argparse.Namespace) -> None:
-    # save args to dict
     d = vars(args)
     d['time'] = str(datetime.datetime.now())
     d['server']=platform.node()
@@ -310,16 +309,6 @@ def run(args: argparse.Namespace) -> None:
                                                                                                savedir=savedir,
                                                                                                target_loader=target_loader_val, best_dice3d_val=best_3d_dice)
                 
-                '''
-                tra_losses_vec, tra_target_vec,tra_source_vec                                        = do_epoch(args, "val", net, device,
-                                                                                               i, loss_fns,
-                                                                                               loss_weights,
-                                                                                               args.resize,
-                                                                                               n_class,metric_axis,
-                                                                                               savedir=savedir,
-                                                                                               target_loader=target_loader)
-                
-                '''
                 tra_losses_vec = val_losses_vec
                 tra_target_vec = val_target_vec
                 tra_source_vec = val_source_vec
@@ -411,7 +400,6 @@ def run(args: argparse.Namespace) -> None:
 def get_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description='Hyperparams')
     parser.add_argument('--target_dataset', type=str, required=True)
-    # parser.add_argument('--weak_subfolder', type=str, required=True)
     parser.add_argument("--workdir", type=str, required=True)
     parser.add_argument("--target_losses", type=str, required=True,
                         help="List of (loss_name, loss_params, bounds_name, bounds_params, fn, weight)")
@@ -453,7 +441,6 @@ def get_args() -> argparse.Namespace:
     parser.add_argument("--cpu", action='store_true')
     parser.add_argument("--in_memory", action='store_true')
     parser.add_argument("--resize", type=int, default=0)
-    # parser.add_argument("--weak", action="store_true")
     parser.add_argument("--pho", nargs='?', type=float, default=1,
                         help='augment')
     parser.add_argument("--n_warmup", type=int, default=0)
