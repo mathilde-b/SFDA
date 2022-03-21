@@ -222,7 +222,7 @@ def do_epoch(args, mode: str, net: Any, device: Any, epc: int,
             else:
             	loss_cons[sm_slice] = 0
             	loss_tot[sm_slice] = loss_kw[0]
-            # # Save images
+            # Save images
             if savedir and args.saveim and mode =="val":
                 with warnings.catch_warnings():
                     warnings.filterwarnings("ignore", category=UserWarning)
@@ -269,7 +269,6 @@ def run(args: argparse.Namespace) -> None:
     d['time'] = str(datetime.datetime.now())
     d['server']=platform.node()
     save_dict_to_file(d,args.workdir)
-
     temperature: float = 0.1
     n_class: int = args.n_class
     metric_axis: List = args.metric_axis
