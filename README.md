@@ -10,6 +10,7 @@ https://www.youtube.com/watch?v=ALYaa5xrxbQ&ab_channel=MB
 * [arXiv preprint](https://arxiv.org/abs/2005.03697)
 
 Please cite our paper if you find it useful for your research.
+
 ```
 
 @inproceedings{BatesonSFDA,
