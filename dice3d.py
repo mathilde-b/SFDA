@@ -16,7 +16,6 @@ from torch import Tensor
 from PIL import Image
 from torchvision import transforms
 from torch.utils.data import Dataset, DataLoader
-from MySampler import Sampler
 import os
 from utils import id_, map_, class2one_hot, resize_im, soft_size
 from utils import simplex, sset, one_hot, dice_batch
