@@ -1,7 +1,6 @@
 #!/usr/env/bin python3.6
 
 from typing import List, Tuple
-# from functools import reduce
 from operator import add
 from functools import reduce
 import numpy as np
