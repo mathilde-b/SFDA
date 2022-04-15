@@ -147,7 +147,6 @@ def do_epoch(args, mode: str, net: Any, device: Any, epc: int,
         for j, target_data in tq_iter:
             target_data[1:] = [e.to(device) for e in target_data[1:]]  # Move all tensors to device
             filenames_target, target_image, target_gt = target_data[:3]
-            #print("target", filenames_target)
             labels = target_data[3:3+L]
             bounds = target_data[3+L:]
             filenames_target = [f.split('.nii')[0] for f in filenames_target]
@@ -198,7 +197,6 @@ def do_epoch(args, mode: str, net: Any, device: Any, epc: int,
                 all_sizes[sm_slice, ...] = torch.round(est_prop.detach()*target_image.shape[2]*target_image.shape[3])
             all_sizes2[sm_slice, ...] = torch.sum(predicted_mask,dim=(2,3)) 
             all_gt_sizes[sm_slice, ...] = torch.sum(target_gt,dim=(2,3)) 
-            #all_sizes2[sm_slice, ...] = torch.sum(target_gt,dim=(2,3)) 
             # # for 3D dice
             if 'slice' in args.grp_regex:
                 all_grp[sm_slice, ...] = torch.FloatTensor([int(re.split('_',re.split('slice',x)[1])[0]) for x in filenames_target]).unsqueeze(1).repeat(1,C)
@@ -214,7 +212,6 @@ def do_epoch(args, mode: str, net: Any, device: Any, epc: int,
             if args.do_hd:
                 all_pred[sm_slice, ...] = probs2class(predicted_mask[:,:,:,:]).cpu().detach()
                 all_gt[sm_slice, ...] = probs2class(target_gt).detach()
-            #loss_log[sm_slice] = loss.detach()
             loss_se[sm_slice] = loss_kw[0]
             if len(loss_kw)>1:
             	loss_cons[sm_slice] = loss_kw[1]
@@ -243,7 +240,6 @@ def do_epoch(args, mode: str, net: Any, device: Any, epc: int,
             nice_dict = {k: f"{v:.4f}" for (k, v) in stat_dict.items()}
             done += B
             tq_iter.set_postfix(nice_dict)
-            #print(f"{desc} " + ', '.join(f"{k}={v}" for (k, v) in nice_dict.items()))   
     if args.dice_3d and (mode == 'val'):
         dice_3d_log, dice_3d_sd_log,hd95_3d_log, hd95_3d_sd_log = dice3d(all_grp, all_inter_card, all_card_gt, all_card_pred,all_pred,all_gt,all_pnames,metric_axis,args.pprint,args.do_hd, best_dice3d_val)
           
@@ -381,7 +377,6 @@ def run(args: argparse.Namespace) -> None:
             'val_dice': [val_target_vec[4]],
             "val_dice_3d_sd": [val_target_vec[1]],
             "val_dice_3d": [val_target_vec[0]]})
-            #"val_hd95_3d": [val_target_vec[2][metric_axis].mean()],
 
        if i == 0:
             df_t = df_t_tmp
@@ -391,7 +386,6 @@ def run(args: argparse.Namespace) -> None:
        df_t.to_csv(Path(savedir, "_".join((args.target_folders.split("'")[1],"target", args.csv))), float_format="%.4f", index=False)
 
        if args.flr==False:
-            #adjust_learning_rate(optimizer, i, args.l_rate, n_epoch, 0.9)
             exp_lr_scheduler(optimizer, i, args.lr_decay,args.lr_decay_epoch)
     print("Results saved in ", savedir, "best 3d dice",best_3d_dice)
 
