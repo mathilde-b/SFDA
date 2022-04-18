@@ -100,12 +100,8 @@ def display_item(axe, img: np.ndarray, mask: np.ndarray, contour: bool, cmap,
         mask=axe.imshow(m, alpha=0.1,cmap="rainbow",norm = mpl.colors.PowerNorm(gamma=0.3,vmin=0,vmax=176))
         forleg = axe.imshow(m, alpha=1)
         values = np.unique(m.ravel())
-        #print(values)
-        #print(min(values),'min values')
-        #print(max(values),'max values')
         val_bins = np.linspace(min(values),max(values),30)
         bins = np.digitize(values,np.linspace(min(values),max(values),30))
-        #print(np.unique(bins),'bins')
         # get the colors of the values, according to the
         # colormap used by imshow
         #colors = [forleg.cmap(forleg.norm(value)) for value in values]
