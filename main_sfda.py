@@ -94,7 +94,6 @@ def do_epoch(args, mode: str, net: Any, device: Any, epc: int,
         desc = f">> Training   ({epc})"
     elif mode == "val":
         net.eval()
-        # net.train()
         desc = f">> Validation ({epc})"
 
     total_it_t, total_images_t = len(target_loader), len(target_loader.dataset)
