@@ -21,10 +21,6 @@ def remap(changes: Dict[int, int], filename: str):
         base = os.path.basename(filename)
         os.makedirs(save_folder,exist_ok=True)
         acc = read_anyformat_image(filename)
-        #img = nib.load(filename)
-        #acc = img.get_data()
-        print(filename)
-        print(np.unique(acc))
         assert set(np.unique(acc)).issubset(changes), (set(changes), np.unique(acc))
 
         for a, b in changes.items():
