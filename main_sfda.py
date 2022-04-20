@@ -270,7 +270,6 @@ def run(args: argparse.Namespace) -> None:
     lr: float = args.l_rate
     dtype = eval(args.dtype)
 
-    # Proper params
     savedir: str = args.workdir
     n_epoch: int = args.n_epoch
 
