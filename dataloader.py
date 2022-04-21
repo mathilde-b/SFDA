@@ -22,28 +22,6 @@ from utils import simplex, sset, one_hot, pad_to, remap
 
 F = Union[Path, BinaryIO]
 D = Union[Image.Image, np.ndarray, Tensor]
-
-
-def nii_transform(resolution: Tuple[float, ...], K: int) -> Callable[[D], Tensor]: 
-        return transforms.Compose([ 
-            lambda nd: ((nd+4) / 8),  # max <= 1 
-            lambda nd: torch.tensor(nd, dtype=torch.float32), 
-                ]) 
-         
-def nii_gt_transform(resolution: Tuple[float, ...], K: int) -> Callable[[D], Tensor]: 
-        return transforms.Compose([ 
-            lambda nd: torch.tensor(nd, dtype=torch.int64) ,  # need to Add one dimension to simulate batch 
-                partial(class2one_hot, K=K), 
-                itemgetter(0),  # Then pop the element to go back to img shape 
-                ])
-
-def dummy_transform(resolution: Tuple[float, ...], K: int) -> Callable[[D], Tensor]:
-        return transforms.Compose([
-            lambda nd: torch.tensor(nd, dtype=torch.int64),
-            lambda t: torch.zeros_like(t),
-                partial(class2one_hot, K=K),
-                itemgetter(0)  # Then pop the element to go back to img shape
-                ])
             
 def get_loaders(args, data_folder: str, subfolders:str,
                 batch_size: int, n_class: int,
@@ -52,7 +30,6 @@ def get_loaders(args, data_folder: str, subfolders:str,
     nii_transform2 = transforms.Compose([
         lambda nd: torch.tensor(nd, dtype=torch.float32),
         lambda nd: nd[:,0:384,0:384],
-        #lambda nd: print(nd.shape),
     ])
 
     nii_gt_transform2 = transforms.Compose([
@@ -60,67 +37,48 @@ def get_loaders(args, data_folder: str, subfolders:str,
         partial(class2one_hot, C=n_class),
         lambda nd: nd[:,:,0:384,0:384],
         itemgetter(0),
-        #lambda nd: print(nd.shape,"nii gt rtans")
     ])
 
 
     nii_transform = transforms.Compose([
         lambda nd: torch.tensor(nd, dtype=torch.float32),
         lambda nd: (nd+4) / 8.5,  # max <= 1
-        #lambda nd: print(nd.shape),
     ])
 
     nii_gt_transform = transforms.Compose([
         lambda nd: torch.tensor(nd, dtype=torch.int64),
         partial(class2one_hot, C=n_class),
         itemgetter(0),
-        #lambda nd: print(nd.shape,"nii gt rtans")
     ])
 
     png_transform = transforms.Compose([
         lambda img: np.array(img)[np.newaxis, ...],
         lambda nd: nd / 255,  # max <= 1
-        # lambda nd: np.pad(nd, [(0,0), (0,0), (110,110)], 'constant'),
-        #lambda nd: pad_to(nd, 256,256),
         lambda nd: torch.tensor(nd, dtype=dtype)
     ])
     imnpy_transform = transforms.Compose([
         lambda nd: nd / 255,  # max <= 1
-        # lambda nd: np.pad(nd, [(0,0), (0,0), (110,110)], 'constant'),
-        #lambda nd: pad_to(nd, 256,256),
         lambda nd: torch.tensor(nd, dtype=dtype)
     ])
     npy_transform = transforms.Compose([
         lambda img: np.array(img)[np.newaxis, ...],
         lambda nd: nd / 255,  # max <= 1
-        #lambda nd: np.pad(nd, [(0,0), (0,0), (110,110)], 'constant'),
-        #lambda nd: pad_to(nd, 256, 256),
         lambda nd: torch.tensor(nd, dtype=dtype)
     ])
     gtnpy_transform = transforms.Compose([
         lambda img: np.array(img)[np.newaxis, ...],
-        #lambda nd: np.pad(nd, [(0, 0), (0, 0), (110, 110)], 'constant'),
-        #lambda nd: pad_to(nd, 256, 256),
         lambda nd: torch.tensor(nd, dtype=torch.int64),
-        #lambda nd: remap({0:0, 36:4, 72:0, 109:1, 145:0, 182:2, 218:3, 255:0},nd),
         partial(class2one_hot, C=n_class),
         itemgetter(0)
     ])
     gt_transform = transforms.Compose([
-        #lambda img: np.array(img)[np.newaxis, ...],
-        #lambda nd: np.pad(nd, [(0, 0), (0, 0), (110, 110)], 'constant'),
-        #lambda nd: pad_to(nd, 256, 256),
         lambda nd: torch.tensor(nd, dtype=torch.int64),
-        #lambda nd: print(nd.shape,"nd in gt transform"),
         partial(class2one_hot, C=n_class),
         itemgetter(0),
     ])
     gtpng_transform = transforms.Compose([
         lambda img: np.array(img)[np.newaxis, ...],
-        #lambda nd: np.pad(nd, [(0, 0), (0, 0), (110, 110)], 'constant'),
-        #lambda nd: pad_to(nd, 256, 256),
         lambda nd: torch.tensor(nd, dtype=torch.int64),
-        #lambda nd: print(nd.shape,"nd in gt transform"),
         partial(class2one_hot, C=n_class),
         itemgetter(0),
     ])
@@ -174,72 +132,37 @@ def get_loaders(args, data_folder: str, subfolders:str,
         train_folders: List[Path] = [Path(data_folder, "trainval", f) for f in folders]
     elif args.valonly:
         train_folders: List[Path] = [Path(data_folder, "val", f) for f in folders]
-    #if args.ontrain1:
-    #    train_folders: List[Path] = [Path(data_folder, "train1", f) for f in folders]
     # I assume all files have the same name inside their folder: makes things much easier
     train_names: List[str] = map_(lambda p: str(p.name), train_folders[0].glob("*.png"))
     if len(train_names)==0:
         train_names: List[str] = map_(lambda p: str(p.name), train_folders[0].glob("*.nii"))
-        if args.ontrain1:
-            train_names: List[str] = map_(lambda p: str(p.name), train_folders[0].glob("*1.nii"))
-        if mode=="target" and args.ontrain19_1:
-            train_names: List[str] = map_(lambda p: str(p.name), train_folders[0].glob("*19_1.nii"))
-        '''
-        if mode=="target" and args.ontrain019_1:
-            train_names: List[str] = map_(lambda p: str(p.name), train_folders[0].glob("*019_1.nii"))
-        '''
-        if mode=="target" and args.ontrain9_1:
-            train_names: List[str] = map_(lambda p: str(p.name), train_folders[0].glob("*9_1.nii"))
     if len(train_names)==0:
         train_names: List[str] = map_(lambda p: str(p.name), train_folders[0].glob("*.npy"))
-    #train_names.sort()
-    #print("train folders[0]",train_folders[0])
-    #print(train_names[:13], "train_names")
     
     train_set = gen_dataset(train_names,
                             train_folders)
-    #if fix_size!=[0,0] and len(train_set)<fix_size[0]:
-        #nb_to_add= fix_size[0] - len(train_set)
-        #print("nb_to_add", nb_to_add)
-        #train_set_2 = RandomSampler(train_set, replacement=True, num_samples=nb_to_add)
-     #   train_set =  Concat([train_set, train_set])
-
     train_loader = data_loader(train_set,
                                batch_size=batch_size,
                                shuffle=shuffle,
                                drop_last=False)
 
-    #train_loader= torch.utils.data.RandomSampler(data_source, replacement=False, num_samples=None)
     if args.ontest:
         print('on test')
         val_folders: List[Path] = [Path(data_folder, "test", f) for f in valfolders]
-        #print(val_folders)
     elif args.ontrain:
         print('on train')
         val_folders: List[Path] = [Path(data_folder, "train", f) for f in valfolders]
     else:#/
         print('on val')
         val_folders: List[Path] = [Path(data_folder, "val", f) for f in valfolders]
-    #print(val_folders,"(val_folders" )
     val_names: List[str] = map_(lambda p: str(p.name), val_folders[0].glob("*.png"))
     if len(val_names)==0:
         val_names: List[str] = map_(lambda p: str(p.name), val_folders[0].glob("*.nii"))
     if len(val_names)==0:
         val_names: List[str] = map_(lambda p: str(p.name), val_folders[0].glob("*.npy"))
-    #print(val_names, "val_names")
-    #val_names.sort()
     val_set = valgen_dataset(val_names,
                           val_folders)
 
-    #if fix_size!=[0,0] and len(val_set)<fix_size[1]:
-        #nb_to_add= fix_size[1] - len(val_set)
-        #val_set_2 = RandomSampler(val_set, replacement=True, num_samples=nb_to_add)
-        #val_set =  Concat([val_set, val_set, val_set, val_set , val_set])
-
-    #val_sampler = PatientSampler(val_set, args.grp_regex, shuffle=shuffle)
-    # val_sampler = None
-    # val_loader = data_loader(val_set,
-    #                          batch_sampler=val_sampler)
 
     val_loader = data_loader(val_set,
                             batch_size=batch_size,
@@ -266,8 +189,6 @@ class SliceDataset(Dataset):
         self.bounds_generators: List[Callable] = bounds_generators
         self.augment: bool = augment
 
-        #print("self.folders",self.folders)
-        #print("self.filenames[:10]",self.filenames[:10])
         if self.debug:
             self.filenames = self.filenames[:10]
         
@@ -319,22 +240,15 @@ class SliceDataset(Dataset):
         filename: str = self.filenames[index]
         path_name: Path = Path(filename)
         images: List[D]
-        #print('get',self.folders, filename) 
         files  = SliceDataset.load_images(self.folders, [filename], self.in_memory)
-        #print('files', files, self.bounds_generators)
-        #print('old files', self.files[0][index])
-        #print(self.files, filename)
-        #print(path_name)
         if path_name.suffix == ".png":
             images = [Image.open(files[index]).convert('L') for files in self.files]
         elif path_name.suffix == ".nii":
             #print(files)
             try:
                 images = [read_nii_image(f[0]) for f in files]
-                #print("nm",[i.shape for i in images])
             except:
                 images = [read_unknownformat_image(f[0]) for f in files]
-                #print("em",[i.shape for i in images])
         elif path_name.suffix == ".npy":
             images = [np.load(files[index]) for files in self.files]
         else:
@@ -347,7 +261,6 @@ class SliceDataset(Dataset):
         t_tensors: List[Tensor] = [tr(e) for (tr, e) in zip(self.transforms, images)]
 
         assert 0 <= t_tensors[0].min() and t_tensors[0].max() <= 1, t_tensors[0].max()  # main image is between 0 and 1
-        #print(t_tensors[0].max()) 
         _, w, h = t_tensors[0].shape
 
         for ttensor, is_hot in zip(t_tensors[1:], self.are_hots):  # All masks (ground truths) are class encoded
@@ -356,7 +269,6 @@ class SliceDataset(Dataset):
             #assert ttensor.shape == (self.C, w, h)
 
         img, gt = t_tensors[:2]
-        #print(gt.shape)
         try:
             bounds = [f(img, gt, t, filename) for f, t in zip(self.bounds_generators, t_tensors[2:])]
         except:
@@ -395,7 +307,6 @@ class PatientSampler(Sampler):
                 self.idx_map[patient] = []
 
             self.idx_map[patient] += [i]
-        # print(self.idx_map)
         assert sum(len(self.idx_map[k]) for k in unique_patients) == len(filenames)
 
         print("Patient to slices mapping done")
