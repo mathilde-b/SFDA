@@ -240,7 +240,7 @@ def do_epoch(args, mode: str, net: Any, device: Any, epc: int,
             done += B
             tq_iter.set_postfix(nice_dict)
     if args.dice_3d and (mode == 'val'):
-        dice_3d_log, dice_3d_sd_log,hd95_3d_log, hd95_3d_sd_log = dice3d(all_grp, all_inter_card, all_card_gt, all_card_pred,all_pred,all_gt,all_pnames,metric_axis,args.pprint,args.do_hd, best_dice3d_val)
+        dice_3d_log, dice_3d_sd_log, asd_3d_log, asd_3d_sd_log, hd_3d_log, hd_3d_sd_log = dice3d(all_grp, all_inter_card, all_card_gt, all_card_pred,all_pred,all_gt,all_pnames,metric_axis,args.pprint,args.do_hd, best_dice3d_val)
           
     dice_2d = torch.index_select(all_dices, 1, indices).mean().cpu().numpy()
     target_vec = [ dice_3d_log, dice_3d_sd_log,hd95_3d_log,hd95_3d_sd_log,dice_2d]
