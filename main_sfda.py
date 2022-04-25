@@ -160,10 +160,6 @@ def do_epoch(args, mode: str, net: Any, device: Any, epc: int,
             with torch.set_grad_enabled(mode == "train"):
                 pred_logits: Tensor = net(target_image)
                 pred_probs: Tensor = F.softmax(pred_logits, dim=1)
-                if new_w > 0:
-                    pred_probs = resize(pred_probs, new_w)
-                    labels = [resize(label, new_w) for label in labels]
-                    target = resize(target, new_w)
                 predicted_mask: Tensor = probs2one_hot(pred_probs)  # Used only for dice computation
             assert len(bounds) == len(loss_fns) == len(loss_weights)
             if epc < n_warmup:
