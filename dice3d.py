@@ -79,14 +79,14 @@ def dice3d(all_grp,all_inter_card,all_card_gt,all_card_pred,all_pred,all_gt,all_
                     label_gt_c[label_gt==j]=1
                     if len(np.unique(label_pred_c))>1: # len(np.unique(label_gt_c))>1 should always be true...
                         if root_name=="Subj_":
-                            res_vec = [2,1.25,1.25]
-                            res_vec = [1,1,1]
+                            res_vec = [2,1.25,1.25] # for metrics in MM
+                            res_vec = [1,1,1] # for metrics in Voxel
                         elif root_name=="Case":
-                            res_vec = [0.6,0.44,0.44]
-                            res_vec = [1,1,1]
+                            res_vec = [0.6,0.44,0.44] # for metrics in MM
+                            res_vec = [1,1,1] # for metrics in Voxel
                         elif root_name=="slice" or root_name == "ctslice":
-                            res_vec= [1.6, 0.78, 0.78]
-                            res_vec = [1,1,1]
+                            res_vec= [1.6, 0.78, 0.78] # for metrics in MM
+                            res_vec = [1,1,1] # for metrics in Voxel
                         else :
                             res_vec = [1,1,1]
                             unit = "voxel"
