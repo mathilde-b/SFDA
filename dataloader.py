@@ -147,13 +147,13 @@ def get_loaders(args, data_folder: str, subfolders:str,
                                drop_last=False)
 
     if args.ontest:
-        print('on test')
+        print('Inference will be done on "test" folder')
         val_folders: List[Path] = [Path(data_folder, "test", f) for f in valfolders]
     elif args.ontrain:
-        print('on train')
+        print('Inference will be done on "train" folder')
         val_folders: List[Path] = [Path(data_folder, "train", f) for f in valfolders]
     else:#/
-        print('on val')
+        print('Inference will be done on "val" folder')
         val_folders: List[Path] = [Path(data_folder, "val", f) for f in valfolders]
     val_names: List[str] = map_(lambda p: str(p.name), val_folders[0].glob("*.png"))
     if len(val_names)==0:
