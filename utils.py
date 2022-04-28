@@ -405,25 +405,6 @@ def save_images_ent(segs: Tensor, names: Iterable[str], root: str, mode: str, it
         save_path.parent.mkdir(parents=True, exist_ok=True)
         imsave(str(save_path), seg.astype('uint8'))
 
-# Misc utils
-
-def save_images_inf(segs: Tensor, names: Iterable[str], root: str, mode: str, remap: True) -> None:
-    b, w, h = segs.shape  # Since we have the class numbers, we do not need a C axis
-
-    for seg, name in zip(segs, names):
-        seg = seg.cpu().numpy()
-        seg = np.round(seg,1)
-        #print(np.unique(seg))
-        if remap:
-            #assert sset(seg, list(range(2)))
-            seg[seg == 1] = 255
-        save_path = Path(root, mode, name).with_suffix(".png")
-        #save_path = Path(root, mode, name).with_suffix(".npy")
-        save_path.parent.mkdir(parents=True, exist_ok=True)
-
-        imsave(str(save_path), seg.astype('uint8'))
-        #np.save(str(save_path), seg)
-
 
 def augment(*arrs: Union[np.ndarray, Image.Image], rotate_angle: float = 45,
             flip: bool = True, mirror: bool = True,
