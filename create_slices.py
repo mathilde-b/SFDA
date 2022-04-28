@@ -16,7 +16,6 @@ def create(filename: str):
     print(filename)
     filename_ = filename.split('.nii')[0]
     acc: np.ndarray = read_nii_image(filename)
-    print(acc.shape)
     for i in range(0,acc.shape[2]):
         sl = acc[:,:,i]
         sl = sl[ np.newaxis,...]
