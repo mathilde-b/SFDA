@@ -304,7 +304,6 @@ def main() -> None:
     fig = plt.figure()
     #event_handler = EventHandler(order, args.n, draw_function, fig)
     #fig.canvas.mpl_connect('button_press_event', event_handler)
-
     #draw_function(order[:args.n], fig=fig)
     #plt.show()
     for a in range(0, len(background_names), args.n):
