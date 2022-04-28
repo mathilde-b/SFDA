@@ -7,8 +7,7 @@ PP = PYTHONPATH="$(PYTHONPATH):."
 CFLAGS = -O
 #DEBUG = --debug
 
-#the regex of the slices in the target dataset
-#for the ivd
+#the regex of the slices in the target dataset for the ivd
 G_RGX = Subj_\d+_\d+
 
 TT_DATA = [('Inn', png_transform, False), ('GT', gtpng_transform, False),('GT', gtpng_transform, False)]
