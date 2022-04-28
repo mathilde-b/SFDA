@@ -911,7 +911,6 @@ def obj_asd(result, reference, voxelspacing=None, connectivity=1):
 
     With the `voxelspacing` parameter, the distances between the voxels can be set for
     each dimension separately:
-
     >>> obj_asd(arr1, arr2, voxelspacing=(1,2))
     1.5
     >>> obj_asd(arr2, arr1, voxelspacing=(1,2))
