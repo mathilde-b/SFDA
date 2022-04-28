@@ -65,7 +65,6 @@ class EntKLProp():
             gt_prop = gt_prop[:,:,0]
         else:
             gt_prop: Tensor = self.__fn__(target,self.power) # the power here is actually useless if we have 0/1 gt labels
-        if not self.curi:
             gt_prop = gt_prop.squeeze(2)
         est_prop = est_prop.squeeze(2)
         log_est_prop: Tensor = (est_prop + 1e-10).log()
