@@ -176,9 +176,7 @@ def do_epoch(args, mode: str, net: Any, device: Any, epc: int,
                         loss =  loss_fn(pred_probs, label, bound)
                         loss = w*loss
                         loss_1 = loss
-                        loss_2 = loss
                     loss_kw.append(loss_1.detach())
-                    loss_kw.append(loss_2.detach())
            # Backward
             if optimizer:
                 loss.backward()
