@@ -263,12 +263,9 @@ def run(args: argparse.Namespace) -> None:
     metric_axis: List = args.metric_axis
     lr: float = args.l_rate
     dtype = eval(args.dtype)
-
     savedir: str = args.workdir
     n_epoch: int = args.n_epoch
-
     net, optimizer, device, loss_fns, loss_weights, scheduler, n_epoch = setup(args, n_class, dtype)
-
     shuffle = True
     print(args.target_folders)
     target_loader, target_loader_val = get_loaders(args, args.target_dataset,args.target_folders,
