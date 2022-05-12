@@ -155,7 +155,6 @@ def do_epoch(args, mode: str, net: Any, device: Any, epc: int,
             if optimizer:
                 #adjust_learning_rate(optimizer, 1, args.l_rate, args.power)
                 optimizer.zero_grad()
-
             # Forward
             with torch.set_grad_enabled(mode == "train"):
                 pred_logits: Tensor = net(target_image)
