@@ -57,13 +57,14 @@ class EntKLProp():
         predicted_mask = probs2one_hot(probs).detach()
         est_prop_mask = self.__fn__(predicted_mask,self.power).squeeze(2)
         est_prop: Tensor = self.__fn__(probs,self.power)
-        if self.curi:
+        if self.curi: # this is the case for the main experiments, i.e. we use curriculum learning. Put self.curi=True to reproduce the method
             if self.ivd:
                 bounds = bounds[:,:,0] 
                 bounds= bounds.unsqueeze(2)
             gt_prop = torch.ones_like(est_prop)*bounds/(w*h)
             gt_prop = gt_prop[:,:,0]
-        else:
+        else: # for toy experiments, you can try and use the GT size calculated from the target instead of an estimation of the size. 
+            #Note that this is "cheating", meaning you are adding supplementary info. But interesting to obtain an upper bound
             gt_prop: Tensor = self.__fn__(target,self.power) # the power here is actually useless if we have 0/1 gt labels
             gt_prop = gt_prop.squeeze(2)
         est_prop = est_prop.squeeze(2)
