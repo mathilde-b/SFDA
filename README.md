@@ -3,11 +3,11 @@ We introduce Source-Free Domain Adaptation for Image Segmentation.
 
 [Mathilde Bateson](https://github.com/mathilde-b), [Hoel Kervadec](https://github.com/HKervadec), [Jose Dolz](https://github.com/josedolz), Hervé Lombaert, Ismail Ben Ayed @ETS Montréal
 
-Code of our submission at [MICCAI 2020](https://link.springer.com/chapter/10.1007/978-3-030-59710-8_48) and its ongoing journal extension. Video of the MICCAI talk is available: 
+Code of our submission at [MICCAI 2020](https://link.springer.com/chapter/10.1007/978-3-030-59710-8_48) and its MedIA journal extension. Video of the MICCAI talk is available: 
 https://www.youtube.com/watch?v=ALYaa5xrxbQ&ab_channel=MB
 
+* [MedIA extension](https://www.sciencedirect.com/science/article/pii/S1361841522002456)
 * [MICCAI 2020 Proceedings](https://link.springer.com/chapter/10.1007/978-3-030-59710-8_48)
-* [arXiv preprint](https://arxiv.org/abs/2005.03697)
 
 Please cite our paper if you find it useful for your research.
 
