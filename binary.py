@@ -21,6 +21,7 @@
 # build-in modules
 
 # third-party modules
+
 import numpy
 from scipy.ndimage import _ni_support
 from scipy.ndimage.morphology import distance_transform_edt, binary_erosion, \
